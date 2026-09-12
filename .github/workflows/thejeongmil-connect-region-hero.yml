@@ -1,0 +1,38 @@
+name: TheJeongmil Connect Regional Hero Images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/thejeongmil_connect_region_hero.py'
+      - 'assets/thejeongmil-region-hero.css'
+      - '.github/workflows/thejeongmil-connect-region-hero.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  connect:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Connect regional representative images
+        run: python tools/thejeongmil_connect_region_hero.py
+      - name: Commit connected pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add region/gwangju region/jeonnam region/jeonbuk DEPLOY-VERSION.txt
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Connect regional representative images to hero sections"
+          git push
