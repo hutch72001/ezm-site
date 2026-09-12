@@ -1,0 +1,100 @@
+name: TheJeongmil Search Intent and Technical SEO Final
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/thejeongmil-search-intent-tech-final.yml'
+permissions:
+  contents: write
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Strengthen intent hubs and technical SEO
+        shell: python
+        run: |
+          from pathlib import Path
+          import re, html
+
+          BRAND='더정밀누수하수구'; PHONE='010-5758-3820'; TEL='01057583820'
+
+          def inject(path, marker, block):
+              p=Path(path); s=p.read_text(encoding='utf-8')
+              if 'SEARCH-INTENT-FINAL' in s: return False
+              pos=s.find(marker)
+              if pos<0: raise SystemExit(f'marker missing: {path}')
+              s=s[:pos]+block+s[pos:]
+              p.write_text(s,encoding='utf-8'); return True
+
+          drain='''<!-- SEARCH-INTENT-FINAL -->
+          <section class="section" id="drain-intents"><div class="wrap"><h2>하수구막힘 증상별 확인</h2><p class="lead">검색어가 달라도 먼저 확인할 것은 막힘 범위와 배관 상태입니다. 아래 항목은 증상별 진단 방향을 찾기 위한 안내입니다.</p><div class="cards">
+          <article class="card" id="sink"><div class="pad"><h3>싱크대막힘·싱크대역류</h3><p>물이 늦게 빠지거나 배수호스에서 소리가 나고 다시 차오르면 주방 가지배관의 유지방·슬러지와 연결부 상태를 확인합니다.</p></div></article>
+          <article class="card" id="toilet"><div class="pad"><h3>변기막힘·변기역류</h3><p>변기 한 곳의 문제인지 다른 배수구까지 동시에 반응하는지 구분해 변기 자체와 공용·메인 배관 범위를 나눠 확인합니다.</p></div></article>
+          <article class="card" id="floor-drain"><div class="pad"><h3>배수구막힘·배수구역류</h3><p>화장실·베란다·세탁실 바닥배수구의 배수 지연은 가까운 가지배관과 하류 배관의 막힘 범위를 함께 확인합니다.</p></div></article>
+          <article class="card" id="sewer"><div class="pad"><h3>오수관막힘·맨홀역류·횡주관막힘</h3><p>여러 곳이 동시에 역류하거나 맨홀 수위가 올라오면 오수관·메인관·횡주관의 위치와 내부 상태를 관로탐지·내시경 등으로 확인합니다.</p></div></article>
+          <article class="card" id="odor"><div class="pad"><h3>하수구냄새·꾸르륵소리</h3><p>냄새와 소리는 막힘뿐 아니라 트랩·통기·배수 흐름과 관련될 수 있어 증상만으로 원인을 단정하지 않고 배관 상태를 구분합니다.</p></div></article>
+          <article class="card" id="cleaning"><div class="pad"><h3>배관내시경·관로탐지·고압세척</h3><p>장비는 목적이 아니라 진단 결과에 따라 선택합니다. 위치와 원인을 확인한 뒤 필요한 경우 석션·플렉스샤프트·고압세척을 적용하고 작업 후 상태를 재확인합니다.</p></div></article>
+          </div></div></section>'''
+          leak='''<!-- SEARCH-INTENT-FINAL -->
+          <section class="section" id="leak-intents"><div class="wrap"><h2>누수 증상별 확인</h2><p class="lead">물이 보이는 위치와 실제 누수 지점은 다를 수 있어 증상과 배관 계통을 먼저 나눠 확인합니다.</p><div class="cards">
+          <article class="card" id="ceiling-leak"><div class="pad"><h3>천장누수·벽 물샘</h3><p>아래층 천장이나 벽에 물이 보이면 피해 위치만 보고 철거하지 않고 상부의 수도·온수·난방·욕실 주변 가능성을 구분합니다.</p></div></article>
+          <article class="card" id="apartment-leak"><div class="pad"><h3>아파트누수</h3><p>세대 내부 배관인지 공용부 또는 방수 관련 증상인지 현장 조건을 확인하고 필요한 배관 계통부터 검사합니다.</p></div></article>
+          <article class="card" id="bathroom-leak"><div class="pad"><h3>화장실누수·욕실누수</h3><p>욕실 주변 물샘은 급수배관, 배수, 방수 등 원인이 다를 수 있으므로 증상 위치와 사용 시점의 변화를 함께 확인합니다.</p></div></article>
+          <article class="card" id="water-pipe"><div class="pad"><h3>수도배관누수·온수배관누수</h3><p>계량기 움직임이나 압력 변화를 확인하고 냉수·온수 계통을 구분한 뒤 가스·청음 등 필요한 탐지로 범위를 좁힙니다.</p></div></article>
+          <article class="card" id="heating-leak"><div class="pad"><h3>난방배관누수·보일러 압력저하</h3><p>보일러 압력이 반복해서 떨어질 때 기기 문제와 배관 이상을 구분하고 난방 계통의 압력과 의심 구간을 확인합니다.</p></div></article>
+          <article class="card" id="leak-test"><div class="pad"><h3>압력·가스·청음·열화상 탐지</h3><p>한 장비 결과만으로 단정하지 않고 현장 조건에 맞는 검사를 교차 확인합니다. 배관을 보수·교체한 경우에는 2차 압력검사로 추가 이상 여부를 확인합니다.</p></div></article>
+          </div></div></section>'''
+          inject('drain/index.html','<section class="section soft">',drain)
+          inject('leak/index.html','<section class="section soft">',leak)
+
+          # Make homepage intent chips deep-link to the matching sections.
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          repl={
+            'href="/drain/">싱크대막힘':'href="/drain/#sink">싱크대막힘',
+            'href="/drain/">변기막힘':'href="/drain/#toilet">변기막힘',
+            'href="/drain/">배수구막힘':'href="/drain/#floor-drain">배수구막힘',
+            'href="/drain/">오수관막힘':'href="/drain/#sewer">오수관막힘',
+            'href="/drain/">맨홀역류':'href="/drain/#sewer">맨홀역류',
+            'href="/drain/">횡주관막힘':'href="/drain/#sewer">횡주관막힘',
+            'href="/drain/">하수구냄새':'href="/drain/#odor">하수구냄새',
+            'href="/drain/">배관내시경':'href="/drain/#cleaning">배관내시경',
+            'href="/drain/">고압세척':'href="/drain/#cleaning">고압세척',
+            'href="/leak/">천장 물샘':'href="/leak/#ceiling-leak">천장 물샘',
+            'href="/leak/">수도배관누수':'href="/leak/#water-pipe">수도배관누수',
+            'href="/leak/">온수배관누수':'href="/leak/#water-pipe">온수배관누수',
+            'href="/leak/">난방배관누수':'href="/leak/#heating-leak">난방배관누수',
+            'href="/leak/">보일러 압력저하':'href="/leak/#heating-leak">보일러 압력저하',
+            'href="/leak/">수도요금 증가':'href="/leak/#water-pipe">수도요금 증가',
+            'href="/leak/">화장실누수':'href="/leak/#bathroom-leak">화장실누수'}
+          for a,b in repl.items(): s=s.replace(a,b)
+          p.write_text(s,encoding='utf-8')
+
+          # Active sitemap only: homepage/hubs + 27 active regions + existing four evidence pairs.
+          active=[
+          'region/gwangju/gwangsan/','region/gwangju/bukgu/','region/gwangju/seogu/','region/gwangju/namgu/','region/gwangju/donggu/',
+          'region/jeonbuk/gochang/','region/jeonbuk/jeongeup/','region/jeonbuk/namwon/','region/jeonbuk/sunchang/',
+          'region/jeonnam/mokpo/','region/jeonnam/yeosu/','region/jeonnam/suncheon/','region/jeonnam/naju/','region/jeonnam/gwangyang/','region/jeonnam/damyang/','region/jeonnam/hwasun/','region/jeonnam/jangseong/','region/jeonnam/yeonggwang/','region/jeonnam/hampyeong/','region/jeonnam/yeongam/','region/jeonnam/muan/','region/jeonnam/gurye/','region/jeonnam/goheung/','region/jeonnam/boseong/','region/jeonnam/gokseong/','region/jeonnam/jangheung/','region/jeonnam/gangjin/' ]
+          urls=['','drain/','leak/','region/','region/gwangju/','region/jeonnam/','region/jeonbuk/','jangseong-drain/','jangseong-leak/','damyang-drain/','damyang-leak/','hwasun-drain/','hwasun-leak/','naju-drain/','naju-leak/']+active
+          sm='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+''.join(f'<url><loc>https://ezm.co.kr/{u}</loc></url>\n' for u in urls)+'</urlset>\n'
+          Path('sitemap.xml').write_text(sm,encoding='utf-8')
+
+          # Technical audit report.
+          checks=[]
+          for f in ['index.html','drain/index.html','leak/index.html']+[x+'index.html' for x in active]:
+              s=Path(f).read_text(encoding='utf-8')
+              checks.append((f, BRAND in re.sub('<[^>]+>','',s), PHONE in s or TEL in s, '010-4833-3447' not in s and '01048333447' not in s, '배관현장연구소' not in re.sub('<[^>]+>','',s)))
+          bad=[x for x in checks if not all(x[1:])]
+          report=f'''# 더정밀누수하수구 세부 검색의도 + 기술 SEO 최종 정리\n\n- 핵심/운영 페이지 검사: {len(checks)}개\n- 정체성 이슈: {len(bad)}개\n- 하수구 세부 검색의도: 싱크대·변기·배수구·오수관/맨홀/횡주관·냄새·장비/세척 독립 앵커\n- 누수 세부 검색의도: 천장·아파트·화장실·수도/온수·난방/보일러·탐지공정 독립 앵커\n- 홈페이지 키워드 링크: /drain/, /leak/ 단일 링크에서 해당 앵커로 세분화\n- sitemap: 운영 27개 지역 중심으로 정리, 해남·완도·진도·신안 및 비운영 전북 페이지 제외\n- robots.txt sitemap 연결 유지\n- 허위 지역사례·출동시간·가격·A/S·보장 문구 추가 없음\n'''
+          if bad: report+='\n## 이슈\n'+'\n'.join('- '+str(x) for x in bad)+'\n'
+          Path('SEARCH-INTENT-TECH-FINAL.md').write_text(report,encoding='utf-8')
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html drain/index.html leak/index.html sitemap.xml SEARCH-INTENT-TECH-FINAL.md
+          git diff --cached --quiet && exit 0
+          git commit -m "Strengthen search intent and finalize technical SEO"
+          git push
