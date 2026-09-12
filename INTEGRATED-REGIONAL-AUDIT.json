@@ -1,0 +1,332 @@
+{
+  "pages": 37,
+  "page_issues": [
+    {
+      "page": "region/jeonbuk/jangsu/index.html",
+      "title": true,
+      "description": true,
+      "h1": true,
+      "faq": false,
+      "service_links": 0,
+      "region_links": 1,
+      "phone": false,
+      "local_intent": false,
+      "keyword_coverage": 2
+    },
+    {
+      "page": "region/jeonbuk/wanju/index.html",
+      "title": true,
+      "description": true,
+      "h1": true,
+      "faq": false,
+      "service_links": 0,
+      "region_links": 1,
+      "phone": false,
+      "local_intent": false,
+      "keyword_coverage": 2
+    },
+    {
+      "page": "region/jeonbuk/gunsan/index.html",
+      "title": true,
+      "description": true,
+      "h1": true,
+      "faq": false,
+      "service_links": 0,
+      "region_links": 1,
+      "phone": false,
+      "local_intent": false,
+      "keyword_coverage": 2
+    },
+    {
+      "page": "region/jeonbuk/iksan/index.html",
+      "title": true,
+      "description": true,
+      "h1": true,
+      "faq": false,
+      "service_links": 0,
+      "region_links": 1,
+      "phone": false,
+      "local_intent": false,
+      "keyword_coverage": 2
+    },
+    {
+      "page": "region/jeonbuk/jinan/index.html",
+      "title": true,
+      "description": true,
+      "h1": true,
+      "faq": false,
+      "service_links": 0,
+      "region_links": 1,
+      "phone": false,
+      "local_intent": false,
+      "keyword_coverage": 2
+    },
+    {
+      "page": "region/jeonbuk/imsil/index.html",
+      "title": true,
+      "description": true,
+      "h1": true,
+      "faq": false,
+      "service_links": 0,
+      "region_links": 1,
+      "phone": false,
+      "local_intent": false,
+      "keyword_coverage": 2
+    },
+    {
+      "page": "region/jeonbuk/jeonju/index.html",
+      "title": true,
+      "description": true,
+      "h1": true,
+      "faq": false,
+      "service_links": 0,
+      "region_links": 1,
+      "phone": false,
+      "local_intent": false,
+      "keyword_coverage": 2
+    },
+    {
+      "page": "region/jeonbuk/gimje/index.html",
+      "title": true,
+      "description": true,
+      "h1": true,
+      "faq": false,
+      "service_links": 0,
+      "region_links": 1,
+      "phone": false,
+      "local_intent": false,
+      "keyword_coverage": 2
+    },
+    {
+      "page": "region/jeonbuk/buan/index.html",
+      "title": true,
+      "description": true,
+      "h1": true,
+      "faq": false,
+      "service_links": 0,
+      "region_links": 1,
+      "phone": false,
+      "local_intent": false,
+      "keyword_coverage": 2
+    },
+    {
+      "page": "region/jeonbuk/muju/index.html",
+      "title": true,
+      "description": true,
+      "h1": true,
+      "faq": false,
+      "service_links": 0,
+      "region_links": 1,
+      "phone": false,
+      "local_intent": false,
+      "keyword_coverage": 2
+    }
+  ],
+  "high_similarity_pairs": [
+    {
+      "a": "region/gwangju/donggu/index.html",
+      "b": "region/gwangju/namgu/index.html",
+      "jaccard": 0.972
+    },
+    {
+      "a": "region/gwangju/seogu/index.html",
+      "b": "region/gwangju/namgu/index.html",
+      "jaccard": 0.953
+    },
+    {
+      "a": "region/jeonbuk/imsil/index.html",
+      "b": "region/jeonbuk/buan/index.html",
+      "jaccard": 0.953
+    },
+    {
+      "a": "region/jeonbuk/imsil/index.html",
+      "b": "region/jeonbuk/muju/index.html",
+      "jaccard": 0.953
+    },
+    {
+      "a": "region/jeonbuk/buan/index.html",
+      "b": "region/jeonbuk/muju/index.html",
+      "jaccard": 0.953
+    },
+    {
+      "a": "region/gwangju/donggu/index.html",
+      "b": "region/gwangju/seogu/index.html",
+      "jaccard": 0.95
+    },
+    {
+      "a": "region/gwangju/gwangsan/index.html",
+      "b": "region/gwangju/namgu/index.html",
+      "jaccard": 0.947
+    },
+    {
+      "a": "region/gwangju/donggu/index.html",
+      "b": "region/gwangju/gwangsan/index.html",
+      "jaccard": 0.944
+    },
+    {
+      "a": "region/gwangju/gwangsan/index.html",
+      "b": "region/gwangju/seogu/index.html",
+      "jaccard": 0.944
+    },
+    {
+      "a": "region/jeonnam/yeonggwang/index.html",
+      "b": "region/jeonnam/hampyeong/index.html",
+      "jaccard": 0.926
+    },
+    {
+      "a": "region/jeonnam/jangheung/index.html",
+      "b": "region/jeonnam/goheung/index.html",
+      "jaccard": 0.918
+    },
+    {
+      "a": "region/jeonnam/yeonggwang/index.html",
+      "b": "region/jeonnam/yeongam/index.html",
+      "jaccard": 0.908
+    },
+    {
+      "a": "region/jeonnam/hampyeong/index.html",
+      "b": "region/jeonnam/goheung/index.html",
+      "jaccard": 0.907
+    },
+    {
+      "a": "region/jeonnam/yeonggwang/index.html",
+      "b": "region/jeonnam/goheung/index.html",
+      "jaccard": 0.904
+    },
+    {
+      "a": "region/jeonnam/yeongam/index.html",
+      "b": "region/jeonnam/hampyeong/index.html",
+      "jaccard": 0.904
+    },
+    {
+      "a": "region/jeonnam/hampyeong/index.html",
+      "b": "region/jeonnam/muan/index.html",
+      "jaccard": 0.9
+    },
+    {
+      "a": "region/jeonnam/goheung/index.html",
+      "b": "region/jeonnam/muan/index.html",
+      "jaccard": 0.893
+    },
+    {
+      "a": "region/jeonnam/yeongam/index.html",
+      "b": "region/jeonnam/muan/index.html",
+      "jaccard": 0.89
+    },
+    {
+      "a": "region/jeonnam/yeongam/index.html",
+      "b": "region/jeonnam/goheung/index.html",
+      "jaccard": 0.889
+    },
+    {
+      "a": "region/jeonbuk/jangsu/index.html",
+      "b": "region/jeonbuk/imsil/index.html",
+      "jaccard": 0.889
+    },
+    {
+      "a": "region/jeonbuk/jangsu/index.html",
+      "b": "region/jeonbuk/buan/index.html",
+      "jaccard": 0.889
+    },
+    {
+      "a": "region/jeonbuk/jangsu/index.html",
+      "b": "region/jeonbuk/muju/index.html",
+      "jaccard": 0.889
+    },
+    {
+      "a": "region/jeonnam/jangheung/index.html",
+      "b": "region/jeonnam/hampyeong/index.html",
+      "jaccard": 0.888
+    },
+    {
+      "a": "region/jeonnam/gangjin/index.html",
+      "b": "region/jeonnam/muan/index.html",
+      "jaccard": 0.887
+    },
+    {
+      "a": "region/jeonnam/boseong/index.html",
+      "b": "region/jeonnam/hampyeong/index.html",
+      "jaccard": 0.886
+    },
+    {
+      "a": "region/jeonnam/jangheung/index.html",
+      "b": "region/jeonnam/yeonggwang/index.html",
+      "jaccard": 0.885
+    },
+    {
+      "a": "region/jeonnam/jangheung/index.html",
+      "b": "region/jeonnam/yeongam/index.html",
+      "jaccard": 0.885
+    },
+    {
+      "a": "region/jeonnam/yeonggwang/index.html",
+      "b": "region/jeonnam/muan/index.html",
+      "jaccard": 0.883
+    },
+    {
+      "a": "region/jeonnam/jangheung/index.html",
+      "b": "region/jeonnam/boseong/index.html",
+      "jaccard": 0.882
+    },
+    {
+      "a": "region/jeonnam/jangheung/index.html",
+      "b": "region/jeonnam/gangjin/index.html",
+      "jaccard": 0.882
+    },
+    {
+      "a": "region/jeonnam/gokseong/index.html",
+      "b": "region/jeonnam/hampyeong/index.html",
+      "jaccard": 0.88
+    },
+    {
+      "a": "region/jeonnam/gokseong/index.html",
+      "b": "region/jeonnam/goheung/index.html",
+      "jaccard": 0.88
+    },
+    {
+      "a": "region/jeonnam/gangjin/index.html",
+      "b": "region/jeonnam/goheung/index.html",
+      "jaccard": 0.879
+    },
+    {
+      "a": "region/jeonnam/jangheung/index.html",
+      "b": "region/jeonnam/gokseong/index.html",
+      "jaccard": 0.876
+    },
+    {
+      "a": "region/jeonnam/jangheung/index.html",
+      "b": "region/jeonnam/muan/index.html",
+      "jaccard": 0.875
+    },
+    {
+      "a": "region/jeonnam/boseong/index.html",
+      "b": "region/jeonnam/yeongam/index.html",
+      "jaccard": 0.875
+    },
+    {
+      "a": "region/jeonnam/gokseong/index.html",
+      "b": "region/jeonnam/muan/index.html",
+      "jaccard": 0.874
+    },
+    {
+      "a": "region/jeonnam/hampyeong/index.html",
+      "b": "region/jeonnam/gurye/index.html",
+      "jaccard": 0.873
+    },
+    {
+      "a": "region/jeonnam/boseong/index.html",
+      "b": "region/jeonnam/goheung/index.html",
+      "jaccard": 0.872
+    },
+    {
+      "a": "region/jeonnam/gokseong/index.html",
+      "b": "region/jeonnam/gurye/index.html",
+      "jaccard": 0.868
+    }
+  ],
+  "summary": {
+    "page_pass": 27,
+    "page_issue_count": 10,
+    "similarity_pair_count": 174
+  }
+}
