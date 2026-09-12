@@ -1,0 +1,94 @@
+name: TheJeongmil Representative Image Filename Cleanup
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/thejeongmil-image-filename-cleanup.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create safe image aliases and update references
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cp 'assets/img/더정밀 누수하수구 원본이미지 최종.png' 'assets/img/thejeongmil-main.png'
+          cp 'assets/img/더정밀 누수하수구 크롭안전버전이미지 최종.png' 'assets/img/thejeongmil-og.png'
+
+          python - <<'PY'
+          from pathlib import Path
+          from urllib.parse import quote
+
+          root = Path('.')
+          old_main = '더정밀 누수하수구 원본이미지 최종.png'
+          old_og = '더정밀 누수하수구 크롭안전버전이미지 최종.png'
+          old_main_enc = quote(old_main)
+          old_og_enc = quote(old_og)
+
+          replacements = {
+              f'/assets/img/{old_main}': '/assets/img/thejeongmil-main.png',
+              f'/assets/img/{old_og}': '/assets/img/thejeongmil-og.png',
+              f'/assets/img/{old_main_enc}': '/assets/img/thejeongmil-main.png',
+              f'/assets/img/{old_og_enc}': '/assets/img/thejeongmil-og.png',
+              f'https://ezm.co.kr/assets/img/{old_main_enc}': 'https://ezm.co.kr/assets/img/thejeongmil-main.png',
+              f'https://ezm.co.kr/assets/img/{old_og_enc}': 'https://ezm.co.kr/assets/img/thejeongmil-og.png',
+              f'https://ezm.co.kr/assets/img/{old_main}': 'https://ezm.co.kr/assets/img/thejeongmil-main.png',
+              f'https://ezm.co.kr/assets/img/{old_og}': 'https://ezm.co.kr/assets/img/thejeongmil-og.png',
+          }
+
+          changed = []
+          for p in root.rglob('*.html'):
+              s = p.read_text(encoding='utf-8')
+              n = s
+              for a, b in replacements.items():
+                  n = n.replace(a, b)
+              if n != s:
+                  p.write_text(n, encoding='utf-8')
+                  changed.append(str(p))
+
+          report = [
+              '# 더정밀누수하수구 대표이미지 파일명 정리',
+              '',
+              '- 본문 대표이미지: /assets/img/thejeongmil-main.png',
+              '- OG/Twitter 대표이미지: /assets/img/thejeongmil-og.png',
+              f'- HTML 수정 파일: {len(changed)}개',
+              '- 기존 한글/공백 원본 파일은 안전을 위해 저장소에 보존',
+              '- 공개 HTML 참조는 영문 안전 경로로 통일',
+              '',
+              '## 수정 파일',
+          ] + [f'- {x}' for x in changed]
+          Path('IMAGE-FILENAME-CLEANUP.md').write_text('\n'.join(report) + '\n', encoding='utf-8')
+
+          bad = []
+          for p in root.rglob('*.html'):
+              s = p.read_text(encoding='utf-8')
+              if old_main in s or old_og in s or old_main_enc in s or old_og_enc in s:
+                  bad.append(str(p))
+          if bad:
+              raise SystemExit('Legacy public image references remain: ' + ', '.join(bad))
+          PY
+
+      - name: Commit cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/img/thejeongmil-main.png assets/img/thejeongmil-og.png '*.html' IMAGE-FILENAME-CLEANUP.md
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+            exit 0
+          fi
+          git commit -m 'Normalize representative image filenames and public references'
+          git push
