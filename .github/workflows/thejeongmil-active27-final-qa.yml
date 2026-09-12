@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - '.github/workflows/thejeongmil-active27-final-qa.yml'
+      - 'region/gwangju/index.html'
+      - 'region/jeonnam/index.html'
   workflow_dispatch:
 permissions:
   contents: write
