@@ -1,0 +1,33 @@
+{
+  "target": 27,
+  "changed": 27,
+  "pages": [
+    "region/gwangju/gwangsan/index.html",
+    "region/gwangju/bukgu/index.html",
+    "region/gwangju/seogu/index.html",
+    "region/gwangju/namgu/index.html",
+    "region/gwangju/donggu/index.html",
+    "region/jeonnam/mokpo/index.html",
+    "region/jeonnam/yeosu/index.html",
+    "region/jeonnam/suncheon/index.html",
+    "region/jeonnam/naju/index.html",
+    "region/jeonnam/gwangyang/index.html",
+    "region/jeonnam/damyang/index.html",
+    "region/jeonnam/hwasun/index.html",
+    "region/jeonnam/jangseong/index.html",
+    "region/jeonnam/yeonggwang/index.html",
+    "region/jeonnam/hampyeong/index.html",
+    "region/jeonnam/yeongam/index.html",
+    "region/jeonnam/muan/index.html",
+    "region/jeonnam/gurye/index.html",
+    "region/jeonnam/goheung/index.html",
+    "region/jeonnam/boseong/index.html",
+    "region/jeonnam/gokseong/index.html",
+    "region/jeonnam/jangheung/index.html",
+    "region/jeonnam/gangjin/index.html",
+    "region/jeonbuk/gochang/index.html",
+    "region/jeonbuk/jeongeup/index.html",
+    "region/jeonbuk/namwon/index.html",
+    "region/jeonbuk/sunchang/index.html"
+  ]
+}
