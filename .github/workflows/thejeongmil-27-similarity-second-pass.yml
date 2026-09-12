@@ -1,0 +1,112 @@
+name: TheJeongmil 27 Similarity Second Pass
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/thejeongmil-27-similarity-second-pass.yml']
+  workflow_dispatch:
+permissions: {contents: write}
+jobs:
+  audit-and-differentiate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Measure active 27 pages and apply second-pass only to high-similarity pages
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, json, itertools
+
+          ACTIVE = [
+            'region/gwangju/gwangsan/index.html','region/gwangju/bukgu/index.html','region/gwangju/seogu/index.html','region/gwangju/namgu/index.html','region/gwangju/donggu/index.html',
+            'region/jeonbuk/gochang/index.html','region/jeonbuk/jeongeup/index.html','region/jeonbuk/namwon/index.html','region/jeonbuk/sunchang/index.html',
+            'region/jeonnam/mokpo/index.html','region/jeonnam/yeosu/index.html','region/jeonnam/suncheon/index.html','region/jeonnam/naju/index.html','region/jeonnam/gwangyang/index.html','region/jeonnam/damyang/index.html','region/jeonnam/hwasun/index.html','region/jeonnam/jangseong/index.html','region/jeonnam/yeonggwang/index.html','region/jeonnam/hampyeong/index.html','region/jeonnam/yeongam/index.html','region/jeonnam/muan/index.html','region/jeonnam/gurye/index.html','region/jeonnam/goheung/index.html','region/jeonnam/boseong/index.html','region/jeonnam/gokseong/index.html','region/jeonnam/jangheung/index.html','region/jeonnam/gangjin/index.html'
+          ]
+          PROFILES = {
+            'gwangsan':('산업·주거 혼합 배관 진단','개별 싱크대·배수구 문제와 여러 지점이 함께 느려지는 메인관로 증상을 나눠 봅니다. 산업시설이나 사용량이 큰 배관은 관경·길이·맨홀 연결을 먼저 확인하고, 일반 주거 배관은 발생 지점과 사용 조건부터 정리합니다.'),
+            'bukgu':('생활배수 동시증상 구분','변기·싱크대·바닥배수구 중 한 곳만 불편한지 여러 곳이 동시에 반응하는지를 먼저 확인합니다. 공동배관 가능성이 있으면 단순 통수보다 공용관로 영향과 내부 상태 확인을 우선하는 기준으로 안내합니다.'),
+            'seogu':('상가·업무시설 반복막힘 판단','사용량이 많은 상가나 업무시설은 짧은 가지배관 문제와 횡주관·공용배관 문제를 나눠 확인합니다. 누수는 냉수·온수·난방 계통별 압력 변화를 먼저 보고 탐지 범위를 줄이는 순서로 설명합니다.'),
+            'namgu':('주택·공동주택 구조 차이','단독주택과 공동주택은 배수 구조가 다르므로 같은 역류라도 확인 순서를 달리합니다. 변기와 바닥배수구의 동시 반응, 천장 물샘과 수도 사용의 연동 여부처럼 현장에서 확인 가능한 단서를 먼저 정리합니다.'),
+            'donggu':('상업지역 배관 사용지점 추적','다중이용·상업 건물은 어느 사용 지점에서 증상이 시작되는지와 다른 배수구의 반응을 함께 봅니다. 오래 반복된 막힘은 관로 범위와 내시경 확인을, 누수는 피해 위치와 공급배관 계통 구분을 우선합니다.'),
+            'gochang':('천장물샘·배관계통 구분','아래층 천장에 물이 보여도 실제 누수 위치가 바로 위라고 단정하지 않습니다. 냉수·온수·난방 배관의 압력 변화와 피해 흔적을 함께 보고, 탐지 후 보수가 이뤄진 경우에는 2차 압력검사로 결과를 재확인하는 흐름을 기준으로 합니다.'),
+            'jeongeup':('주거배관 반복증상 진단','싱크대와 변기 같은 개별 배수 문제는 사용 지점과 배수 속도를 먼저 보고, 여러 곳이 함께 느려지면 메인 오수관 쪽으로 범위를 넓힙니다. 물샘은 계량기·압력 변화와 피해 위치를 함께 확인해 불필요한 개방을 줄이는 방향으로 안내합니다.'),
+            'namwon':('주택·상가 메인배관 범위 판단','한 지점의 느린 배수와 여러 지점의 동시 역류를 구분해 가지배관과 메인관로 가능성을 나눕니다. 외부 맨홀 수위나 배수 방향도 함께 확인해 실내 배관 문제인지 외부 오수관 문제인지 판단 범위를 정리합니다.'),
+            'sunchang':('읍면권 실내·외부 배관 구분','주택과 소규모 상가에서는 실내 배수구와 건물 밖 오수관을 같은 문제로 보지 않고 증상 발생 위치와 맨홀 반응을 따로 봅니다. 반복막힘은 이물질 종류와 관로 길이를 확인한 뒤 세척 범위를 정하는 흐름으로 안내합니다.'),
+            'mokpo':('도심 주거·상가 배수범위 구분','싱크대·변기·바닥배수구 중 어느 지점부터 문제가 시작됐는지 확인해 가지배관과 메인관로를 나눠 봅니다. 여러 배수구가 함께 느려지거나 맨홀 수위가 변하면 오수관 범위까지 확인해야 할 수 있음을 설명합니다.'),
+            'yeosu':('사용량 큰 사업장 배관 판단','주거시설과 상가·사업장의 배관 사용량 차이를 고려해 슬러지·오수관·메인 배수 문제를 구분합니다. 막힘은 관경·배관 길이·동시 역류 여부를 보고, 누수는 압력검사 결과에 따라 탐지 장비 적용 순서를 정합니다.'),
+            'suncheon':('공장·상가·공동배관 진단','공장 메인 오수관, 상가 배수관, 아파트 공용배관은 구조와 사용량이 달라 같은 방식으로 판단하지 않습니다. 긴 관로나 대형 배관은 내시경·관로 확인을 바탕으로 고압세척 필요성을 결정하고 작업 후 배수 상태를 다시 확인합니다.'),
+            'naju':('빛가람권 공동주택·산업시설 분리','공동주택·상가와 산업시설은 배수 지점 수와 사용 조건이 달라 진단 범위를 별도로 봅니다. 한 지점 싱크대 막힘과 여러 시설이 연결된 메인 배관 문제를 분리하고, 누수는 압력 변화와 피해 위치를 함께 확인합니다.'),
+            'gwangyang':('대구경·장거리 관로 확인','산업시설과 일반 주거시설의 배관 조건 차이를 고려해 대구경·장거리 관로와 가정 배수 문제를 구분합니다. 맨홀 수위 상승이나 여러 배수구 동시 역류는 메인 오수관 가능성을, 한 곳의 느린 배수는 해당 가지배관 상태를 먼저 확인합니다.'),
+            'damyang':('외부 오수관·맨홀 방향 진단','주택·상가·공장 배관에서 짧은 가지배관과 외부 오수관·맨홀 방향 문제를 구분합니다. 기름 슬러지나 이물질이 반복되는 경우에는 물길만 여는 것보다 내부 상태를 확인한 뒤 세척 범위를 정하는 기준을 적용합니다.'),
+            'hwasun':('음식점·상가 기름성 막힘 구분','주거 배관과 음식점·상가처럼 사용량이 많은 배관을 나눠 보고 기름성 오염, 반복막힘, 바닥배수구 역류의 원인을 확인합니다. 누수는 압력검사와 가스·청음·열화상 결과를 필요한 범위에서 교차 확인하는 흐름으로 설명합니다.'),
+            'jangseong':('실내배관·외부관로 연결 확인','읍·면 주거지와 사업장에서는 배관 길이와 외부 관로 연결을 고려해 실내 배수구 문제인지 외부 오수관 문제인지 먼저 나눕니다. 배관 보수 후에는 2차 압력검사로 결과를 다시 확인하는 절차를 중요하게 봅니다.'),
+            'yeonggwang':('천장누수와 오수관 증상 분리','천장 물샘은 실제 누수 지점과 피해 지점이 다를 수 있어 배관 계통 구분부터 진행합니다. 하수구 문제는 변기·싱크대·배수구 중 어느 지점이 함께 반응하는지 확인해 개별 배관과 메인 오수관 범위를 나눕니다.'),
+            'hampyeong':('계량기·맨홀 단서 활용','실내 배수구가 느린지, 맨홀 수위가 함께 변하는지에 따라 실내 배관과 외부 배수관을 나눠 봅니다. 누수는 계량기와 압력 변화, 피해 흔적을 먼저 정리해 탐지와 개방 범위를 불필요하게 넓히지 않도록 합니다.'),
+            'yeongam':('산업시설 관경·사용량 차이','주거시설과 산업·사업장 배관은 관경과 사용량 차이가 커 같은 증상이라도 작업 범위를 별도로 판단해야 합니다. 여러 지점이 함께 역류하면 메인관로와 맨홀 방향을, 한 지점만 느리면 해당 가지배관을 우선 확인합니다.'),
+            'muan':('공동주택·단독주택 원인 분리','공동주택과 단독주택의 배관 구조 차이를 고려해 싱크대·변기·바닥배수구 증상이 단독인지 동시에 나타나는지부터 확인합니다. 천장 물샘은 공급배관과 생활방수 등 가능한 원인을 구분해 접근합니다.'),
+            'gurye':('숙박·상가 배수사용 패턴 확인','주택과 상가·숙박시설은 배수 사용 패턴이 달라 한 지점 막힘과 건물 메인 배수 문제를 구분하는 질문부터 시작합니다. 외부 관로가 의심되면 맨홀과 배수 방향을 확인하고, 누수는 압력 변화가 있는 계통부터 범위를 좁힙니다.'),
+            'goheung':('읍면권 장거리 외부배관 점검','실내 배관뿐 아니라 건물 밖 오수관까지 이어지는 구간을 나눠 봅니다. 반복막힘은 이물질 종류와 관로 길이, 맨홀 반응을 함께 확인해 단순 통수로 끝낼지 추가 세척이 필요한지 판단합니다.'),
+            'boseong':('주택·상가 배수와 외부관로 분리','한 곳의 싱크대·배수구 문제인지 여러 지점이 연결된 오수관 문제인지부터 구분합니다. 외부관로가 의심될 때는 맨홀 방향과 배수 흐름을 확인하고, 누수는 공급배관 계통별 압력검사로 범위를 좁힙니다.'),
+            'gokseong':('개별배관·메인관로 경계 확인','주택과 소규모 사업장 배관에서 개별 배수구 증상과 여러 지점 동시 역류를 구분합니다. 관로가 길거나 외부 구간이 포함되면 맨홀과 배수 방향을 확인한 뒤 필요한 장비와 작업 범위를 결정합니다.'),
+            'jangheung':('외부 오수관·사업장 배수 진단','주거시설과 사업장 배관을 같은 기준으로 보지 않고 사용량과 관로 길이를 따로 확인합니다. 여러 지점이 함께 느려질 때는 메인 오수관과 외부 맨홀 방향까지 범위를 넓혀 확인하는 흐름으로 안내합니다.'),
+            'gangjin':('주거·상가 배수단계별 확인','한 지점만 느린 경우와 여러 배수구가 함께 반응하는 경우를 나눠 가지배관과 메인 오수관 가능성을 구분합니다. 누수는 피해 흔적만 보지 않고 압력 변화와 배관 계통을 함께 확인해 탐지 범위를 정합니다.')
+          }
+
+          def clean_html(s):
+            s=re.sub(r'<script.*?</script>|<style.*?</style>',' ',s,flags=re.S|re.I)
+            s=re.sub(r'<[^>]+>',' ',s)
+            return re.sub(r'\s+',' ',s).strip()
+          def tokens(s):
+            return set(re.findall(r'[가-힣A-Za-z0-9]{2,}',clean_html(s)))
+          def pairs_for(paths, threshold=0.82):
+            docs={p:tokens(Path(p).read_text(encoding='utf-8')) for p in paths}
+            out=[]
+            for a,b in itertools.combinations(paths,2):
+              A,B=docs[a],docs[b]
+              sc=len(A&B)/max(1,len(A|B))
+              if sc>=threshold: out.append({'a':a,'b':b,'jaccard':round(sc,3)})
+            return sorted(out,key=lambda x:-x['jaccard'])
+
+          missing=[p for p in ACTIVE if not Path(p).exists()]
+          if missing: raise SystemExit('Missing active pages: '+', '.join(missing))
+
+          before=pairs_for(ACTIVE)
+          targets=sorted(set([x['a'] for x in before]+[x['b'] for x in before]))
+
+          for p in targets:
+            path=Path(p); s=path.read_text(encoding='utf-8')
+            slug=path.parent.name
+            title,body=PROFILES[slug]
+            s=re.sub(r'<!-- SECOND-DIFF START -->.*?<!-- SECOND-DIFF END -->','',s,flags=re.S)
+            block=(f'<!-- SECOND-DIFF START --><section class="v4-section v4-soft v4-second-diff"><div class="v4-shell"><span class="v4-kicker">DIAGNOSIS FOCUS</span><h2>{title}</h2><p>{body}</p><p>이 설명은 특정 현장의 시공실적을 주장하는 내용이 아니라, 해당 지역 페이지에서 상담 시 확인할 배관 증상과 진단 순서를 구분해 안내하기 위한 기준입니다.</p></div></section><!-- SECOND-DIFF END -->')
+            if '<nav class="v4-bottom">' in s:
+              s=s.replace('<nav class="v4-bottom">',block+'<nav class="v4-bottom">',1)
+            else:
+              s=s.replace('</body>',block+'</body>',1)
+            path.write_text(s,encoding='utf-8')
+
+          after=pairs_for(ACTIVE)
+          result={
+            'active_pages':27,
+            'threshold':0.82,
+            'before_high_similarity_pairs':before,
+            'target_pages_for_second_pass':targets,
+            'target_page_count':len(targets),
+            'after_high_similarity_pairs':after,
+            'before_pair_count':len(before),
+            'after_pair_count':len(after)
+          }
+          Path('ACTIVE27-SIMILARITY-SECOND-PASS.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+          md=['# 더정밀 27개 운영페이지 유사도 재측정 + 2차 차별화','',f'- 운영 대상: 27개',f'- 기준: Jaccard 0.82 이상',f'- 수정 전 고유사 조합: {len(before)}',f'- 2차 차별화 대상 페이지: {len(targets)}',f'- 수정 후 고유사 조합: {len(after)}','', '## 수정 전 상위 조합']
+          md += [f"- {x['a']} ↔ {x['b']} : {x['jaccard']}" for x in before[:15]] or ['- 없음']
+          md += ['', '## 2차 차별화 적용 페이지']+[f'- {x}' for x in targets] if targets else ['', '## 2차 차별화 적용 페이지','- 없음']
+          md += ['', '## 수정 후 남은 상위 조합']+[f"- {x['a']} ↔ {x['b']} : {x['jaccard']}" for x in after[:15]] if after else ['', '## 수정 후 남은 상위 조합','- 없음']
+          Path('ACTIVE27-SIMILARITY-SECOND-PASS.md').write_text('\n'.join(md)+'\n',encoding='utf-8')
+          print(json.dumps({'before':len(before),'targets':len(targets),'after':len(after)},ensure_ascii=False))
+          PY
+      - name: Commit second-pass changes and audit reports
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add region/gwangju region/jeonnam region/jeonbuk ACTIVE27-SIMILARITY-SECOND-PASS.json ACTIVE27-SIMILARITY-SECOND-PASS.md
+          git diff --cached --quiet || git commit -m 'Second-pass differentiate high-similarity active regional pages'
+          git push
