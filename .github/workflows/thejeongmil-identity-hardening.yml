@@ -1,0 +1,80 @@
+name: TheJeongmil Identity Hardening
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/thejeongmil-identity-hardening.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Normalize split legacy branding and old URLs
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, json
+
+          friend_brand='더정밀누수하수구'
+          friend_phone='010-5758-3820'
+          friend_tel='01057583820'
+          legacy_rendered='배관'+'현장'+'연구소'
+          legacy_short='배관'+'연구소'
+          legacy_domain='superman'+'drain.co.kr'
+          old_digits='010'+'4833'+'3447'
+          old_hyphen='010'+'-4833'+'-3447'
+          old_space='010'+' 4833'+' 3447'
+          old_super=['슈퍼맨'+'하수구누수','슈퍼맨'+'하수구','슈퍼맨'+'누수']
+          default_og='https://ezm.co.kr/assets/img/%EB%8D%94%EC%A0%95%EB%B0%80%20%EB%88%84%EC%88%98%ED%95%98%EC%88%98%EA%B5%AC%20%ED%81%AC%EB%A1%AD%EC%95%88%EC%A0%84%EB%B2%84%EC%A0%84%EC%9D%B4%EB%AF%B8%EC%A7%80%20%EC%B5%9C%EC%A2%85.png'
+          changed=[]
+          for p in Path('.').rglob('*.html'):
+            if '.git' in p.parts: continue
+            s=p.read_text(encoding='utf-8')
+            n=s
+            # Catch branding split by HTML tags, especially 배관<b>현장연구소</b>.
+            n=re.sub(r'배관(?:\s*<[^>]+>\s*)*현장연구소(?:\s*</[^>]+>\s*)*',friend_brand,n)
+            n=re.sub(r'배관(?:\s*<[^>]+>\s*)*연구소(?:\s*</[^>]+>\s*)*',friend_brand,n)
+            n=n.replace(legacy_rendered,friend_brand).replace(legacy_short,friend_brand)
+            n=n.replace(old_hyphen,friend_phone).replace(old_space,friend_phone).replace(old_digits,friend_tel)
+            for x in old_super: n=n.replace(x,friend_brand)
+            # Any legacy-domain OG/Twitter image becomes the friend representative image.
+            n=re.sub(r'(<meta[^>]+(?:property|name)=["\'](?:og:image|twitter:image)["\'][^>]+content=["\'])https?://(?:www\.)?'+re.escape(legacy_domain)+r'[^"\']*(["\'][^>]*>)',r'\1'+default_og+r'\2',n,flags=re.I)
+            n=re.sub(r'(<meta[^>]+content=["\'])https?://(?:www\.)?'+re.escape(legacy_domain)+r'[^"\']*(["\'][^>]+(?:property|name)=["\'](?:og:image|twitter:image)["\'][^>]*>)',r'\1'+default_og+r'\2',n,flags=re.I)
+            # Remove other direct links to the old domain.
+            n=re.sub(r'\s(?:href|src)=["\']https?://(?:www\.)?'+re.escape(legacy_domain)+r'[^"\']*["\']','',n,flags=re.I)
+            if n!=s:
+              p.write_text(n,encoding='utf-8'); changed.append(str(p))
+
+          issues=[]
+          for p in Path('.').rglob('*.html'):
+            if '.git' in p.parts: continue
+            raw=p.read_text(encoding='utf-8')
+            rendered=re.sub(r'<script.*?</script>|<style.*?</style>',' ',raw,flags=re.S|re.I)
+            rendered=re.sub(r'<[^>]+>','',rendered)
+            rendered=re.sub(r'\s+','',rendered)
+            found=[]
+            for term in [legacy_rendered,legacy_short,old_digits,old_hyphen.replace('-',''),old_space.replace(' ',''),*old_super]:
+              if term.replace('-','').replace(' ','') in rendered.replace('-','').replace(' ',''): found.append(term)
+            if legacy_domain in raw: found.append(legacy_domain)
+            bad_tel=[x for x in re.findall(r'tel:([0-9\- ]+)',raw) if re.sub(r'\D','',x)!=friend_tel]
+            if bad_tel: found.append('bad_tel:'+','.join(bad_tel))
+            if found: issues.append({'file':str(p),'found':found})
+
+          report={'final_brand':friend_brand,'final_phone':friend_phone,'changed_html':changed,'remaining_identity_issues':issues,'html_count':len(list(Path('.').rglob('*.html')))}
+          Path('IDENTITY-HARDENING-REPORT.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+          md=['# 더정밀누수하수구 정체성 하드닝','',f'- 검사 HTML: {report["html_count"]}개',f'- 추가 교정 HTML: {len(changed)}개',f'- 남은 정체성 이슈: {len(issues)}개','',f'- 최종 브랜드: {friend_brand}',f'- 최종 전화번호: {friend_phone}']
+          if changed: md+=['','## 추가 교정 파일']+[f'- {x}' for x in changed]
+          if issues: md+=['','## 남은 이슈']+[f'- {x}' for x in issues]
+          Path('IDENTITY-HARDENING-REPORT.md').write_text('\n'.join(md)+'\n',encoding='utf-8')
+          print(json.dumps({'changed':len(changed),'issues':len(issues)},ensure_ascii=False))
+          PY
+      - name: Commit hardened identity cleanup
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --quiet || git commit -m 'Harden friend brand identity across all public HTML'
+          git push
