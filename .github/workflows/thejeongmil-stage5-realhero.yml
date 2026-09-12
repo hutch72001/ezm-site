@@ -1,0 +1,34 @@
+name: TheJeongmil Stage5 Real Portrait Hero
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/thejeongmil_stage5_realhero.py'
+      - '.github/workflows/thejeongmil-stage5-realhero.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  migrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Apply real portrait regional hero
+        run: python tools/thejeongmil_stage5_realhero.py
+      - name: Commit real portrait hero pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add region/gwangju region/jeonnam region/jeonbuk/gochang region/jeonbuk/jeongeup region/jeonbuk/namwon region/jeonbuk/sunchang assets/style.css DEPLOY-VERSION.txt
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Apply actual friend portrait to regional hero sections"
+          git push
