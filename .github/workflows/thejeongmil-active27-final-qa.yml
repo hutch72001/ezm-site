@@ -1,0 +1,80 @@
+name: TheJeongmil Active27 Final QA
+on:
+  push:
+    paths:
+      - '.github/workflows/thejeongmil-active27-final-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Audit active 27 regions and core service pages
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, json, sys
+          active = [
+          'region/gwangju/gwangsan/index.html','region/gwangju/bukgu/index.html','region/gwangju/seogu/index.html','region/gwangju/namgu/index.html','region/gwangju/donggu/index.html',
+          'region/jeonbuk/gochang/index.html','region/jeonbuk/jeongeup/index.html','region/jeonbuk/namwon/index.html','region/jeonbuk/sunchang/index.html',
+          'region/jeonnam/mokpo/index.html','region/jeonnam/yeosu/index.html','region/jeonnam/suncheon/index.html','region/jeonnam/naju/index.html','region/jeonnam/gwangyang/index.html','region/jeonnam/damyang/index.html','region/jeonnam/hwasun/index.html','region/jeonnam/jangseong/index.html','region/jeonnam/yeonggwang/index.html','region/jeonnam/hampyeong/index.html','region/jeonnam/yeongam/index.html','region/jeonnam/muan/index.html','region/jeonnam/gurye/index.html','region/jeonnam/goheung/index.html','region/jeonnam/boseong/index.html','region/jeonnam/gokseong/index.html','region/jeonnam/jangheung/index.html','region/jeonnam/gangjin/index.html']
+          core=['index.html','drain/index.html','leak/index.html','region/gwangju/index.html','region/jeonnam/index.html']
+          files=core+active
+          issues=[]; rows=[]; titles={}; descs={}; h1s={}
+          old=['배관현장연구소','배관연구소','010-4833-3447','01048333447','supermandrain.co.kr','슈퍼맨하수구','슈퍼맨누수']
+          for f in files:
+            p=Path(f)
+            if not p.exists(): issues.append(f+' MISSING'); continue
+            s=p.read_text(encoding='utf-8')
+            def one(pat):
+              m=re.search(pat,s,re.I|re.S); return re.sub('<[^>]+>','',m.group(1)).strip() if m else ''
+            title=one(r'<title>(.*?)</title>'); desc=one(r'<meta\s+name=["\']description["\']\s+content=["\'](.*?)["\']') or one(r'<meta\s+content=["\'](.*?)["\']\s+name=["\']description["\']'); h1=one(r'<h1[^>]*>(.*?)</h1>')
+            canonical=bool(re.search(r'<link[^>]+rel=["\']canonical["\'][^>]+href=["\']https://ezm\.co\.kr/',s,re.I) or re.search(r'<link[^>]+href=["\']https://ezm\.co\.kr/[^"\']*["\'][^>]+rel=["\']canonical["\']',s,re.I))
+            phone=('010-5758-3820' in s or '01057583820' in s)
+            brand='더정밀누수하수구' in re.sub('<[^>]+>','',s)
+            og=bool(re.search(r'property=["\']og:image["\']',s,re.I))
+            legacy=[x for x in old if x in s]
+            local=('region/' not in f) or ('LocalBusiness' in s and 'Service' in s)
+            faq=('region/' not in f) or ('FAQPage' in s and len(re.findall(r'<details',s,re.I))>=4)
+            links=('region/' not in f) or ('/drain/' in s and '/leak/' in s)
+            for label,val in [('title',title),('description',desc),('h1',h1)]:
+              if not val: issues.append(f+' missing '+label)
+            if not canonical: issues.append(f+' canonical')
+            if not phone: issues.append(f+' friend phone')
+            if not brand: issues.append(f+' friend brand')
+            if not og: issues.append(f+' og:image')
+            if legacy: issues.append(f+' legacy '+','.join(legacy))
+            if not local: issues.append(f+' schema')
+            if not faq: issues.append(f+' faq')
+            if not links: issues.append(f+' service links')
+            if f in active:
+              titles.setdefault(title,[]).append(f); descs.setdefault(desc,[]).append(f); h1s.setdefault(h1,[]).append(f)
+            rows.append((f,title,canonical,phone,brand,og,local,faq,links,len(legacy)))
+          for label,d in [('title',titles),('description',descs),('h1',h1s)]:
+            for k,v in d.items():
+              if k and len(v)>1: issues.append('duplicate '+label+': '+str(v))
+          sm=Path('sitemap.xml').read_text(encoding='utf-8') if Path('sitemap.xml').exists() else ''
+          for f in active:
+            url='https://ezm.co.kr/'+f.replace('index.html','')
+            if url not in sm: issues.append('sitemap missing '+url)
+          excluded=['haenam','wando','jindo','sinan','jeonju','gunsan','iksan','gimje','wanju','jinan','muju','jangsu','imsil','buan']
+          for x in excluded:
+            if re.search(r'/region/[^<]*'+x+r'/',sm): issues.append('sitemap inactive '+x)
+          report=['# ACTIVE 27 + CORE FINAL QA','',f'- audited pages: {len(files)}',f'- active region pages: {len(active)}',f'- issues: {len(issues)}','', '## Checks','title / description / H1 / canonical / og:image / friend identity / old identity / LocalBusiness+Service / FAQ / drain+leak links / sitemap active27 / inactive sitemap exclusion / duplicate regional metadata','','## Result']
+          report += (['PASS - 0 issues'] if not issues else ['FAIL']+['- '+x for x in issues])
+          Path('ACTIVE27-CORE-FINAL-QA.md').write_text('\n'.join(report)+'\n',encoding='utf-8')
+          print('\n'.join(report))
+          if issues: sys.exit(1)
+          PY
+      - name: Commit QA report
+        if: success()
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add ACTIVE27-CORE-FINAL-QA.md
+          git diff --cached --quiet || (git commit -m 'Record active 27 and core final QA pass' && git push)
