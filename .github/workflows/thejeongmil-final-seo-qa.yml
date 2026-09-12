@@ -1,0 +1,110 @@
+name: TheJeongmil Final SEO QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/thejeongmil-final-seo-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Final QA and safe schema hardening
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, json, html
+
+          active = {
+            'region/gwangju/gwangsan/index.html':'광주 광산구','region/gwangju/bukgu/index.html':'광주 북구','region/gwangju/seogu/index.html':'광주 서구','region/gwangju/namgu/index.html':'광주 남구','region/gwangju/donggu/index.html':'광주 동구',
+            'region/jeonbuk/gochang/index.html':'고창','region/jeonbuk/jeongeup/index.html':'정읍','region/jeonbuk/namwon/index.html':'남원','region/jeonbuk/sunchang/index.html':'순창',
+            'region/jeonnam/mokpo/index.html':'목포','region/jeonnam/yeosu/index.html':'여수','region/jeonnam/suncheon/index.html':'순천','region/jeonnam/naju/index.html':'나주','region/jeonnam/gwangyang/index.html':'광양','region/jeonnam/damyang/index.html':'담양','region/jeonnam/hwasun/index.html':'화순','region/jeonnam/jangseong/index.html':'장성','region/jeonnam/yeonggwang/index.html':'영광','region/jeonnam/hampyeong/index.html':'함평','region/jeonnam/yeongam/index.html':'영암','region/jeonnam/muan/index.html':'무안','region/jeonnam/gurye/index.html':'구례','region/jeonnam/goheung/index.html':'고흥','region/jeonnam/boseong/index.html':'보성','region/jeonnam/gokseong/index.html':'곡성','region/jeonnam/jangheung/index.html':'장흥','region/jeonnam/gangjin/index.html':'강진'
+          }
+          legacy = ['배관현장연구소','배관연구소','010-4833-3447','01048333447','supermandrain.co.kr','슈퍼맨하수구','슈퍼맨누수']
+          rows=[]; changed=[]
+          titles={}; descs={}; h1s={}
+
+          def visible(x):
+            x=re.sub(r'<script.*?</script>|<style.*?</style>',' ',x,flags=re.S|re.I)
+            x=re.sub(r'<[^>]+>',' ',x)
+            return re.sub(r'\s+',' ',html.unescape(x)).strip()
+
+          for path, region in active.items():
+            p=Path(path)
+            if not p.exists():
+              rows.append({'page':path,'region':region,'status':'MISSING'})
+              continue
+            s=p.read_text(encoding='utf-8')
+            before=s
+            url='https://ezm.co.kr/' + path[:-10]
+            if not url.endswith('/'): url+='/'
+            title_m=re.search(r'<title>(.*?)</title>',s,re.S|re.I)
+            desc_m=re.search(r'<meta\s+name=["\']description["\']\s+content=["\'](.*?)["\']',s,re.S|re.I)
+            h1_m=re.search(r'<h1[^>]*>(.*?)</h1>',s,re.S|re.I)
+            title=visible(title_m.group(1)) if title_m else ''
+            desc=html.unescape(desc_m.group(1)).strip() if desc_m else ''
+            h1=visible(h1_m.group(1)) if h1_m else ''
+            titles.setdefault(title,[]).append(path); descs.setdefault(desc,[]).append(path); h1s.setdefault(h1,[]).append(path)
+
+            # LocalBusiness/Service schema: no fabricated address/hours/rating.
+            if '"@type":"LocalBusiness"' not in s and '"@type": "LocalBusiness"' not in s:
+              schema={
+                '@context':'https://schema.org','@graph':[
+                  {'@type':'WebPage','name':title or f'{region} 하수구막힘·누수탐지','url':url,'inLanguage':'ko-KR'},
+                  {'@type':'LocalBusiness','name':'더정밀누수하수구','url':'https://ezm.co.kr/','telephone':'010-5758-3820','areaServed':region},
+                  {'@type':'Service','name':f'{region} 하수구막힘·누수탐지','serviceType':['하수구막힘','누수탐지'],'areaServed':region,'provider':{'@type':'LocalBusiness','name':'더정밀누수하수구','telephone':'010-5758-3820','url':'https://ezm.co.kr/'}}
+                ]}
+              tag='<script type="application/ld+json">'+json.dumps(schema,ensure_ascii=False,separators=(',',':'))+'</script>'
+              s=s.replace('</head>',tag+'</head>',1)
+
+            # FAQ schema from the actual visible FAQ only; do not invent FAQ text.
+            if 'FAQPage' not in s:
+              qa=[]
+              for m in re.finditer(r'<details[^>]*>\s*<summary[^>]*>(.*?)</summary>\s*<p[^>]*>(.*?)</p>',s,re.S|re.I):
+                q=visible(m.group(1)); a=visible(m.group(2))
+                if q and a: qa.append((q,a))
+              if qa:
+                faq={'@context':'https://schema.org','@type':'FAQPage','mainEntity':[{'@type':'Question','name':q,'acceptedAnswer':{'@type':'Answer','text':a}} for q,a in qa[:6]]}
+                tag='<script type="application/ld+json">'+json.dumps(faq,ensure_ascii=False,separators=(',',':'))+'</script>'
+                s=s.replace('</head>',tag+'</head>',1)
+
+            if s!=before:
+              p.write_text(s,encoding='utf-8'); changed.append(path)
+
+            text=visible(s)
+            links=re.findall(r'href=["\']([^"\']+)',s,re.I)
+            faq_count=len(re.findall(r'<details\b',s,re.I))
+            checks={
+              'title':bool(title),'description':bool(desc),'h1':bool(h1),'canonical':bool(re.search(r'<link[^>]+rel=["\']canonical["\']',s,re.I)),
+              'brand':'더정밀누수하수구' in text,'phone_display':'010-5758-3820' in text,'phone_link':'tel:01057583820' in s,
+              'drain_link':any(x.startswith('/drain/') or x=='/drain/' for x in links),'leak_link':any(x.startswith('/leak/') or x=='/leak/' for x in links),
+              'region_link':sum(1 for x in links if x.startswith('/region/'))>=1,'faq_visible':faq_count>=4,'faq_schema':'FAQPage' in s,
+              'localbusiness_schema':('LocalBusiness' in s and '010-5758-3820' in s),'og_image':bool(re.search(r'<meta[^>]+property=["\']og:image["\']',s,re.I)),
+              'legacy_clear':not any(x in s or x in text for x in legacy)
+            }
+            rows.append({'page':path,'region':region,'status':'PASS' if all(checks.values()) else 'ISSUE','checks':checks,'faq_count':faq_count})
+
+          dup_title={k:v for k,v in titles.items() if k and len(v)>1}
+          dup_desc={k:v for k,v in descs.items() if k and len(v)>1}
+          dup_h1={k:v for k,v in h1s.items() if k and len(v)>1}
+          issues=[r for r in rows if r.get('status')!='PASS']
+          report={'target_pages':27,'changed_pages':len(changed),'changed':changed,'pass_pages':len(rows)-len(issues),'issue_pages':len(issues),'issues':issues,'duplicate_titles':dup_title,'duplicate_descriptions':dup_desc,'duplicate_h1':dup_h1}
+          Path('FINAL-SEO-QA.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+          md=['# 더정밀누수하수구 최종 SEO QA','',f'- 운영 대상: 27개',f'- 안전 교정 페이지: {len(changed)}개',f'- PASS: {len(rows)-len(issues)}개',f'- 이슈: {len(issues)}개',f'- 중복 title: {len(dup_title)}개',f'- 중복 description: {len(dup_desc)}개',f'- 중복 H1: {len(dup_h1)}개','','## 검사 기준','- title / description / H1 / canonical / og:image','- 브랜드 더정밀누수하수구 / 전화 010-5758-3820','- 하수구·누수·지역 내부링크','- 실제 FAQ 4개 이상 + FAQPage JSON-LD','- LocalBusiness + Service JSON-LD','- 옛 브랜드·옛 전화·supermandrain.co.kr 잔존 여부','']
+          if issues:
+            md+=['## 남은 이슈']+[f"- {r['page']}: "+', '.join(k for k,v in r.get('checks',{}).items() if not v) for r in issues]
+          else: md+=['## 결과','- 27개 운영페이지 전체 PASS']
+          Path('FINAL-SEO-QA.md').write_text('\n'.join(md)+'\n',encoding='utf-8')
+          Path('DEPLOY-VERSION.txt').write_text('THEJEONGMIL-V2.3-FINAL-SEO-QA\n',encoding='utf-8')
+          print(json.dumps({'changed':len(changed),'pass':len(rows)-len(issues),'issues':len(issues),'dup_title':len(dup_title),'dup_desc':len(dup_desc),'dup_h1':len(dup_h1)},ensure_ascii=False))
+          PY
+      - name: Commit final QA and safe fixes
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add region/gwangju region/jeonnam region/jeonbuk FINAL-SEO-QA.json FINAL-SEO-QA.md DEPLOY-VERSION.txt
+          git diff --cached --quiet || git commit -m 'Final SEO QA and schema hardening for 27 active regions'
+          git push
