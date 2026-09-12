@@ -1,0 +1,56 @@
+{
+  "target_brand": "더정밀누수하수구",
+  "target_phone": "010-5758-3820",
+  "public_html_count": 58,
+  "changed_text_files": [
+    "QA-REPORT.md",
+    "README.txt",
+    "damyang-leak/index.html",
+    "jangseong-drain/index.html",
+    "jangseong-leak/index.html",
+    "naju-drain/index.html",
+    "hwasun-drain/index.html",
+    "naju-leak/index.html",
+    "hwasun-leak/index.html",
+    "damyang-drain/index.html",
+    "region/jeonbuk/jangsu/index.html",
+    "region/jeonbuk/wanju/index.html",
+    "region/jeonbuk/gunsan/index.html",
+    "region/jeonbuk/iksan/index.html",
+    "region/jeonbuk/jinan/index.html",
+    "region/jeonbuk/imsil/index.html",
+    "region/jeonbuk/jeonju/index.html",
+    "region/jeonbuk/gimje/index.html",
+    "region/jeonbuk/buan/index.html",
+    "region/jeonbuk/muju/index.html"
+  ],
+  "public_identity_issues": [
+    {
+      "file": "jangseong-drain/index.html",
+      "legacy": [
+        "supermandrain.co.kr"
+      ]
+    },
+    {
+      "file": "jangseong-leak/index.html",
+      "legacy": [
+        "supermandrain.co.kr"
+      ]
+    }
+  ],
+  "repository_legacy_hits": [
+    {
+      "file": "jangseong-drain/index.html",
+      "legacy": [
+        "supermandrain.co.kr"
+      ]
+    },
+    {
+      "file": "jangseong-leak/index.html",
+      "legacy": [
+        "supermandrain.co.kr"
+      ]
+    }
+  ],
+  "old_asset_present": false
+}
