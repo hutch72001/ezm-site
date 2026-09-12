@@ -1,0 +1,106 @@
+name: TheJeongmil Identity Cleanup
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/thejeongmil-identity-cleanup.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove legacy identity from text files and audit all public pages
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          root=Path('.')
+          # Build legacy strings by concatenation so this workflow does not contain them verbatim.
+          legacy_brand_1='배관'+'현장'+'연구소'
+          legacy_brand_2='배관'+'연구소'
+          old_phone_digits='010'+'4833'+'3447'
+          old_phone_hyphen='010'+'-4833'+'-3447'
+          old_phone_space='010'+' 4833'+' 3447'
+          old_super_1='슈퍼맨'+'하수구누수'
+          old_super_2='슈퍼맨'+'하수구'
+          old_super_3='슈퍼맨'+'누수'
+          old_domain='superman'+'drain.co.kr'
+
+          replacements={
+            legacy_brand_1:'더정밀누수하수구',
+            legacy_brand_2:'더정밀누수하수구',
+            old_phone_hyphen:'010-5758-3820',
+            old_phone_space:'010-5758-3820',
+            old_phone_digits:'01057583820',
+            old_super_1:'더정밀누수하수구',
+            old_super_2:'더정밀누수하수구',
+            old_super_3:'더정밀누수하수구',
+          }
+          text_ext={'.html','.htm','.css','.js','.json','.md','.txt','.xml','.yml','.yaml','.svg','.webmanifest'}
+          changed=[]
+          for p in root.rglob('*'):
+            if not p.is_file() or '.git' in p.parts: continue
+            if p.suffix.lower() not in text_ext: continue
+            try: s=p.read_text(encoding='utf-8')
+            except Exception: continue
+            new=s
+            for a,b in replacements.items(): new=new.replace(a,b)
+            # Remove any direct legacy-domain href/src references rather than silently pointing them elsewhere.
+            new=re.sub(r'\s(?:href|src)=["\']https?://(?:www\.)?'+re.escape(old_domain)+r'[^"\']*["\']','',new,flags=re.I)
+            if new!=s:
+              p.write_text(new,encoding='utf-8')
+              changed.append(str(p))
+
+          # Public HTML identity audit.
+          public_html=[p for p in root.rglob('*.html') if '.git' not in p.parts]
+          issues=[]
+          legacy_terms=[legacy_brand_1,legacy_brand_2,old_phone_digits,old_phone_hyphen,old_phone_space,old_super_1,old_super_2,old_super_3,old_domain]
+          for p in public_html:
+            try:s=p.read_text(encoding='utf-8')
+            except Exception:continue
+            found=[x for x in legacy_terms if x in s]
+            if found: issues.append({'file':str(p),'legacy':found})
+            # Any page that presents the service brand should use the friend's brand/phone.
+            if ('하수구' in s or '누수' in s) and ('더정밀누수하수구' not in s or '01057583820' not in s):
+              issues.append({'file':str(p),'identity_missing':True})
+
+          # Repository-wide text recheck, excluding this workflow itself (patterns are constructed anyway).
+          repo_hits=[]
+          for p in root.rglob('*'):
+            if not p.is_file() or '.git' in p.parts or p.suffix.lower() not in text_ext: continue
+            try:s=p.read_text(encoding='utf-8')
+            except Exception:continue
+            found=[x for x in legacy_terms if x in s]
+            if found: repo_hits.append({'file':str(p),'legacy':found})
+
+          report={
+            'target_brand':'더정밀누수하수구',
+            'target_phone':'010-5758-3820',
+            'public_html_count':len(public_html),
+            'changed_text_files':changed,
+            'public_identity_issues':issues,
+            'repository_legacy_hits':repo_hits,
+            'old_asset_present':Path('assets/img/baegwan-lab-main.png').exists(),
+          }
+          Path('IDENTITY-CLEANUP-REPORT.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+          md=['# 더정밀누수하수구 정체성 정리 보고서','',f"- 최종 브랜드: 더정밀누수하수구",f"- 최종 전화: 010-5758-3820",f"- 검사 HTML: {len(public_html)}개",f"- 자동 교정 텍스트 파일: {len(changed)}개",f"- 공개 HTML 정체성 이슈: {len(issues)}개",f"- 저장소 텍스트 내 옛 정체성 잔존: {len(repo_hits)}개",f"- 옛 대표자산 baegwan-lab-main.png 존재: {Path('assets/img/baegwan-lab-main.png').exists()}"]
+          if changed:
+            md+=['','## 자동 교정 파일']+[f'- {x}' for x in changed]
+          if issues:
+            md+=['','## 공개 페이지 잔여 이슈']+[f"- {x}" for x in issues]
+          if repo_hits:
+            md+=['','## 저장소 잔여 텍스트']+[f"- {x}" for x in repo_hits]
+          Path('IDENTITY-CLEANUP-REPORT.md').write_text('\n'.join(md)+'\n',encoding='utf-8')
+          print(json.dumps({'changed':len(changed),'html':len(public_html),'issues':len(issues),'repo_hits':len(repo_hits)},ensure_ascii=False))
+          PY
+      - name: Commit identity cleanup
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --quiet || git commit -m 'Remove legacy identity and normalize friend brand across site'
+          git push
