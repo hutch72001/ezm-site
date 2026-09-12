@@ -1,0 +1,32 @@
+name: TheJeongmil Regional Content Links Stage
+on:
+  push:
+    paths:
+      - 'tools/thejeongmil_content_links_stage.py'
+      - '.github/workflows/thejeongmil-content-links-stage.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply regional content and internal links
+        run: python tools/thejeongmil_content_links_stage.py
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add region assets/thejeongmil-region-hero.css CONTENT-LINK-STAGE-REPORT.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Strengthen regional content FAQ and internal links"
+            git push
+          fi
