@@ -25,14 +25,14 @@ for rel,img in MAP.items():
  if '<link rel="stylesheet" href="/assets/thejeongmil-region-hero.css">' not in s: fail(issues,rel,'regional hero CSS link missing')
  if not any(x['page']==rel for x in issues): passed.append(rel)
 css=(ROOT/'assets/thejeongmil-region-hero.css').read_text(encoding='utf-8') if (ROOT/'assets/thejeongmil-region-hero.css').exists() else ''
-for required in ['object-fit:contain','aspect-ratio:1/1','@media (max-width:899px)','overflow-wrap:anywhere']:
+for required in ['object-fit:contain','aspect-ratio:1/1','@media (max-width:899px)','word-break:keep-all','white-space:nowrap']:
  if required not in css: fail(issues,'assets/thejeongmil-region-hero.css',f'CSS QA rule missing: {required}')
 report={'target_pages':len(MAP),'passed_pages':len(passed),'issue_count':len(issues),'issues':issues}
 (ROOT/'REGION-HERO-QA.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 md=['# 더정밀 지역 대표이미지 QA','',f'- 대상 페이지: {len(MAP)}',f'- PASS: {len(passed)}',f'- 이슈: {len(issues)}','']
 if issues:
  md+=['## 이슈']+[f"- `{x['page']}` — {x['issue']}" for x in issues]
-else: md+=['## 결과','- 지역별 대표이미지 경로, OG 이미지, alt, 셀카 Hero 제거, 모바일 contain 규칙 모두 PASS']
+else: md+=['## 결과','- 지역별 대표이미지 경로, OG 이미지, alt, 셀카 Hero 제거, 모바일 contain 및 제목 줄바꿈 규칙 모두 PASS']
 (ROOT/'REGION-HERO-QA.md').write_text('\n'.join(md)+'\n',encoding='utf-8')
 print(json.dumps(report,ensure_ascii=False))
 if issues: raise SystemExit(1)
