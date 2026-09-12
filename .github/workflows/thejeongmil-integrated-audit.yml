@@ -1,0 +1,68 @@
+name: TheJeongmil Integrated Regional Audit
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/thejeongmil-integrated-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit 27 regional pages
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, json, itertools
+          roots=[Path('region/gwangju'),Path('region/jeonnam'),Path('region/jeonbuk')]
+          excluded={'haenam','wando','jindo','sinan'}
+          pages=[]
+          for root in roots:
+            if not root.exists(): continue
+            for p in root.glob('*/index.html'):
+              if p.parent.name not in excluded: pages.append(p)
+          def text(s):
+            s=re.sub(r'<script.*?</script>|<style.*?</style>',' ',s,flags=re.S|re.I)
+            s=re.sub(r'<[^>]+>',' ',s)
+            return re.sub(r'\s+',' ',s).strip()
+          rows=[]
+          docs={}
+          for p in pages:
+            s=p.read_text(encoding='utf-8'); t=text(s); docs[str(p)]=set(re.findall(r'[가-힣A-Za-z0-9]{2,}',t))
+            title=re.search(r'<title>(.*?)</title>',s,re.S|re.I)
+            h1=re.search(r'<h1[^>]*>(.*?)</h1>',s,re.S|re.I)
+            desc=re.search(r'<meta name="description" content="([^"]*)"',s,re.I)
+            links=re.findall(r'href="([^"]+)"',s)
+            faq=('FAQPage' in s)
+            service_links=sum(x in links for x in ['/drain/','/leak/'])
+            region_links=sum(1 for x in links if x.startswith('/region/'))
+            phone=('01057583820' in s)
+            local=('LOCAL SERVICE' in s or '생활권' in s)
+            keywords=sum(k in t for k in ['하수구막힘','싱크대막힘','배수구막힘','고압세척','누수탐지','천장누수'])
+            rows.append({'page':str(p),'title':bool(title),'description':bool(desc),'h1':bool(h1),'faq':faq,'service_links':service_links,'region_links':region_links,'phone':phone,'local_intent':local,'keyword_coverage':keywords})
+          sims=[]
+          for a,b in itertools.combinations(docs,2):
+            A,B=docs[a],docs[b]; score=len(A&B)/max(1,len(A|B))
+            if score>=.72: sims.append({'a':a,'b':b,'jaccard':round(score,3)})
+          issues=[]
+          for r in rows:
+            if not all([r['title'],r['description'],r['h1'],r['faq'],r['phone'],r['local_intent']]) or r['service_links']<2 or r['region_links']<2 or r['keyword_coverage']<3: issues.append(r)
+          report={'pages':len(rows),'page_issues':issues,'high_similarity_pairs':sorted(sims,key=lambda x:-x['jaccard'])[:40],'summary':{'page_pass':len(rows)-len(issues),'page_issue_count':len(issues),'similarity_pair_count':len(sims)}}
+          Path('INTEGRATED-REGIONAL-AUDIT.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+          md=['# 더정밀 지역 통합 Audit','',f"- 대상: {len(rows)}개",f"- 기본 SEO/내부링크/FAQ PASS: {len(rows)-len(issues)}",f"- 페이지 이슈: {len(issues)}",f"- 높은 템플릿 유사도 쌍(>=0.72): {len(sims)}",'','## 검사 항목','- title / description / H1','- 하수구·누수 서비스 내부링크','- 지역 허브·인접지역 내부링크','- FAQPage','- 전화 CTA','- 생활권(Local intent)','- 핵심 증상 키워드 범위','- 페이지 간 텍스트 Jaccard 유사도','']
+          if sims:
+            md += ['## 우선 차별화 대상']+[f"- {x['a']} ↔ {x['b']} : {x['jaccard']}" for x in sorted(sims,key=lambda x:-x['jaccard'])[:15]]
+          else: md += ['## 유사도 결과','- 0.72 이상 고유사 문서 쌍 없음']
+          Path('INTEGRATED-REGIONAL-AUDIT.md').write_text('\n'.join(md)+'\n',encoding='utf-8')
+          print(json.dumps(report['summary'],ensure_ascii=False))
+          PY
+      - name: Commit report
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add INTEGRATED-REGIONAL-AUDIT.json INTEGRATED-REGIONAL-AUDIT.md
+          git diff --cached --quiet || git commit -m 'Audit regional internal links similarity and keywords'
+          git push
