@@ -1,0 +1,53 @@
+{
+  "active_pages": 27,
+  "threshold": 0.82,
+  "before_high_similarity_pairs": [
+    {
+      "a": "region/gwangju/gwangsan/index.html",
+      "b": "region/gwangju/seogu/index.html",
+      "jaccard": 0.847
+    },
+    {
+      "a": "region/gwangju/namgu/index.html",
+      "b": "region/gwangju/donggu/index.html",
+      "jaccard": 0.844
+    },
+    {
+      "a": "region/gwangju/seogu/index.html",
+      "b": "region/gwangju/donggu/index.html",
+      "jaccard": 0.84
+    },
+    {
+      "a": "region/gwangju/seogu/index.html",
+      "b": "region/gwangju/namgu/index.html",
+      "jaccard": 0.838
+    },
+    {
+      "a": "region/gwangju/gwangsan/index.html",
+      "b": "region/gwangju/donggu/index.html",
+      "jaccard": 0.834
+    },
+    {
+      "a": "region/jeonnam/goheung/index.html",
+      "b": "region/jeonnam/jangheung/index.html",
+      "jaccard": 0.834
+    },
+    {
+      "a": "region/gwangju/gwangsan/index.html",
+      "b": "region/gwangju/namgu/index.html",
+      "jaccard": 0.832
+    }
+  ],
+  "target_pages_for_second_pass": [
+    "region/gwangju/donggu/index.html",
+    "region/gwangju/gwangsan/index.html",
+    "region/gwangju/namgu/index.html",
+    "region/gwangju/seogu/index.html",
+    "region/jeonnam/goheung/index.html",
+    "region/jeonnam/jangheung/index.html"
+  ],
+  "target_page_count": 6,
+  "after_high_similarity_pairs": [],
+  "before_pair_count": 7,
+  "after_pair_count": 0
+}
