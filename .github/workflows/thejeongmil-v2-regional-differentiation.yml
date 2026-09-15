@@ -1,0 +1,95 @@
+name: TheJeongmil V2 Regional Differentiation
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/thejeongmil-v2-regional-differentiation.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  differentiate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Differentiate active 27 V2 intent blocks
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re,json,html
+          groups={
+          'urban': [('region/gwangju/gwangsan/index.html','광주 광산구'),('region/gwangju/bukgu/index.html','광주 북구'),('region/gwangju/seogu/index.html','광주 서구'),('region/gwangju/namgu/index.html','광주 남구'),('region/gwangju/donggu/index.html','광주 동구')],
+          'east': [('region/jeonnam/yeosu/index.html','여수'),('region/jeonnam/suncheon/index.html','순천'),('region/jeonnam/gwangyang/index.html','광양')],
+          'southwest': [('region/jeonnam/mokpo/index.html','목포'),('region/jeonnam/yeongam/index.html','영암'),('region/jeonnam/muan/index.html','무안'),('region/jeonnam/naju/index.html','나주')],
+          'county': [('region/jeonnam/damyang/index.html','담양'),('region/jeonnam/hwasun/index.html','화순'),('region/jeonnam/jangseong/index.html','장성'),('region/jeonnam/yeonggwang/index.html','영광'),('region/jeonnam/hampyeong/index.html','함평'),('region/jeonnam/gurye/index.html','구례'),('region/jeonnam/goheung/index.html','고흥'),('region/jeonnam/boseong/index.html','보성'),('region/jeonnam/gokseong/index.html','곡성'),('region/jeonnam/jangheung/index.html','장흥'),('region/jeonnam/gangjin/index.html','강진')],
+          'jeonbuk': [('region/jeonbuk/gochang/index.html','고창'),('region/jeonbuk/jeongeup/index.html','정읍'),('region/jeonbuk/namwon/index.html','남원'),('region/jeonbuk/sunchang/index.html','순창')]
+          }
+          # Region-specific emphasis. Service/search information only; never claims a local case.
+          focus={
+          '광주 광산구':('아파트·상가·공장','싱크대막힘·변기막힘·배수구역류','천장누수·난방배관누수','오수관과 공용배관'),
+          '광주 북구':('아파트·상가·주택','싱크대막힘·변기막힘·하수구냄새','천장누수·화장실누수','가지배관과 공용배관'),
+          '광주 서구':('아파트·상가·다가구','싱크대막힘·배수구역류·변기막힘','아파트누수·천장누수','주방배관과 공용배관'),
+          '광주 남구':('아파트·주택·상가','배수구막힘·변기막힘·오수관막힘','화장실누수·수도배관누수','세대배관과 오수관'),
+          '광주 동구':('아파트·상가·구도심 건물','욕실배수구·변기막힘·오수관막힘','천장누수·화장실누수','세대배관과 공용 오수관'),
+          '여수':('상가·사업장·공장·공동주택','오수관막힘·맨홀역류·고압세척','천장누수·수도배관누수','메인 오수관과 사업장 배수'),
+          '순천':('아파트·상가·사업장','오수관막힘·횡주관막힘·맨홀역류','천장누수·난방배관누수','공용배관과 메인관로'),
+          '광양':('공장·사업장·상가·주택','오수관막힘·횡주관막힘·맨홀역류·고압세척','수도배관누수·천장누수','대형 관로와 사업장 배수'),
+          '목포':('아파트·상가·주택','싱크대막힘·오수관막힘·맨홀역류','천장누수·화장실누수','세대배관과 공용관'),
+          '영암':('주택·상가·사업장·제조시설','오수관막힘·배수구역류·맨홀역류','수도배관누수·천장누수','외부 오수관과 사업장 배수'),
+          '무안':('아파트·주택·상가','싱크대막힘·배수구역류·오수관막힘','아파트누수·천장누수','세대배관과 외부 오수관'),
+          '나주':('아파트·상가·사업장·주택','싱크대막힘·오수관막힘·맨홀역류','천장누수·수도배관누수','생활배관과 사업장 관로'),
+          '담양':('주택·상가·읍면 생활권','반복막힘·싱크대막힘·배수구역류','천장누수·온수배관누수','주택 배수관과 외부 오수관'),
+          '화순':('아파트·주택·상가','싱크대막힘·변기막힘·오수관막힘','천장누수·난방배관누수','세대배관과 외부관로'),
+          '장성':('주택·상가·사업장','배수구막힘·오수관막힘·맨홀역류','수도배관누수·천장누수','외부 오수관과 사업장 배수'),
+          '영광':('주택·상가·사업장','싱크대막힘·오수관막힘·맨홀역류','온수배관누수·수도배관누수','생활배관과 외부 오수관'),
+          '함평':('주택·상가·읍면 생활권','배수구역류·오수관막힘·맨홀역류','천장누수·수도배관누수','외부 배수관과 오수관'),
+          '구례':('주택·상가·숙박시설','배수구막힘·오수관막힘·하수구냄새','온수배관누수·천장누수','생활배관과 외부 오수관'),
+          '고흥':('주택·상가·읍면 생활권','싱크대막힘·배수구역류·오수관막힘','수도배관누수·온수배관누수','주택 배수관과 외부관로'),
+          '보성':('주택·상가·숙박시설','싱크대막힘·오수관막힘·하수구냄새','천장누수·온수배관누수','생활배관과 외부 오수관'),
+          '곡성':('주택·상가·읍면 생활권','반복막힘·배수구막힘·오수관막힘','수도배관누수·천장누수','주택 배수관과 외부관로'),
+          '장흥':('주택·상가·읍면 생활권','배수구역류·오수관막힘·맨홀역류','수도배관누수·온수배관누수','외부 배수관과 오수관'),
+          '강진':('주택·상가·읍면 생활권','싱크대막힘·배수구막힘·오수관막힘','천장누수·수도배관누수','생활배관과 외부 오수관'),
+          '고창':('주택·상가·농촌형 건물','싱크대막힘·오수관막힘·맨홀역류','천장누수·온수배관누수','주택 배수관과 외부 오수관'),
+          '정읍':('아파트·주택·상가','싱크대막힘·변기막힘·오수관막힘','천장누수·난방배관누수','세대배관과 외부 오수관'),
+          '남원':('아파트·주택·상가','배수구막힘·오수관막힘·맨홀역류','천장누수·수도배관누수','생활배관과 메인관로'),
+          '순창':('주택·상가·읍면 생활권','반복막힘·배수구역류·오수관막힘','온수배관누수·수도배관누수','주택 배수관과 외부관로')}
+          allpages=[x for g in groups.values() for x in g]
+          changed=[];issues=[]
+          for path,r in allpages:
+            p=Path(path); s=p.read_text(encoding='utf-8'); before=s
+            building,drain,leak,pipe=focus[r]
+            new=f'''<!-- SEARCH-INTENT-V2 --><section class="v4-section v4-intent-v2" id="search-intent-v2"><div class="v4-shell"><span class="v4-kicker">LOCAL SYMPTOM & DECISION GUIDE</span><h2>{r} 배관 문제, 건물과 증상 범위부터 나눠봅니다</h2><p>{r}에서는 {building}에서 나타나는 배관 증상을 같은 방식으로 단정하기보다 사용 장소와 동시에 이상이 생기는 범위를 먼저 확인하는 것이 중요합니다. 특정 지역 시공사례를 의미하는 설명이 아니라 상담 시 확인할 일반적인 진단 기준입니다.</p><div class="v4-symgrid"><div><b>{r} {drain}</b><span>{pipe} 중 어느 구간이 영향을 받는지 증상 범위를 확인한 뒤 배관내시경·관로탐지·고압세척 등 필요한 작업을 판단합니다.</span></div><div><b>{r} {leak}</b><span>물자국 위치만으로 원인을 단정하지 않고 냉수·온수·난방 계통을 구분한 뒤 압력검사와 필요한 탐지 방법으로 범위를 좁힙니다.</span></div><div><b>한 곳 문제와 여러 곳 동시 문제</b><span>한 개 배수구만 느린 경우와 변기·배수구·맨홀까지 함께 이상이 생기는 경우는 확인해야 할 배관 범위가 달라집니다.</span></div><div><b>반복되는 막힘·물샘</b><span>이전 작업 뒤 다시 발생했다면 단순 통수보다 배관 내부 상태와 누수 계통을 다시 확인해 재발 원인을 좁히는 데 초점을 둡니다.</span></div></div><h3>{r} 업체 상담 전 비용이 달라지는 이유를 확인하세요</h3><p>하수구막힘은 막힌 위치·배관 길이·관경·오염 상태와 필요한 장비에 따라, 누수탐지는 의심 배관의 종류·탐지 범위·보수 여부에 따라 작업 범위와 비용이 달라질 수 있습니다. 증상과 이전 작업 여부를 먼저 설명하고 원인 확인 없이 작업 범위를 불필요하게 넓히지 않는지 확인하는 것이 좋습니다.</p><div class="v4-linkcards"><a href="/drain/"><b>{r} 하수구 증상 확인</b><span>막힘·역류·오수관·맨홀과 진단장비 안내</span></a><a href="/leak/"><b>{r} 누수 증상 확인</b><span>천장 물샘·수도·온수·난방배관 진단 안내</span></a><a href="tel:01057583820"><b>{r} 전화상담</b><span>010-5758-3820</span></a></div></div></section>'''
+            pat=r'<!-- SEARCH-INTENT-V2 --><section class="v4-section v4-intent-v2".*?</section>(?=<section class="v4-section v4-content-links")'
+            s,n=re.subn(pat,new,s,count=1,flags=re.S)
+            if n!=1: issues.append([path,'V2 block replace failed']); continue
+            # Naturalize the plain keyword-list SEARCH GUIDE only; preserve section structure.
+            sg=r'(<span class="v4-kicker">SEARCH GUIDE</span><h2>[^<]+</h2>)<p>[^<]* · [^<]*</p><p>단순히 지역명만 바꾼 설명이 아니라 증상 → 의심 구간 → 필요한 검사 → 작업 후 검증 순서로 안내합니다\.</p>'
+            repl=r'\1<p>'+r+f'에서 {drain}처럼 배수 문제가 나타나거나 {leak}처럼 물샘이 의심될 때는 증상 범위와 {pipe} 상태를 먼저 나눠 확인합니다. 필요한 경우 내시경·관로탐지·압력검사 등 진단 결과를 바탕으로 작업 범위를 결정합니다.</p>'
+            s=re.sub(sg,repl,s,count=1)
+            if s!=before: p.write_text(s,encoding='utf-8');changed.append(path)
+            # invariants
+            for token in ['더정밀누수하수구','010-5758-3820','rel="canonical"','FAQPage','href="/drain/"','href="/leak/"','SEARCH-INTENT-V2']:
+              if token not in s: issues.append([path,'missing '+token])
+            for bad in ['배관현장연구소','010-4833-3447','supermandrain.co.kr','슈퍼맨하수구','슈퍼맨누수']:
+              if bad in s: issues.append([path,'legacy '+bad])
+            if r not in s: issues.append([path,'region missing'])
+          # uniqueness of new V2 visible text
+          blocks=[]
+          for path,r in allpages:
+            s=Path(path).read_text(encoding='utf-8')
+            m=re.search(r'<!-- SEARCH-INTENT-V2 -->(.*?)(?=<section class="v4-section v4-content-links")',s,re.S)
+            t=re.sub(r'<[^>]+>',' ',m.group(1) if m else '')
+            t=re.sub(r'\s+',' ',html.unescape(t)).strip()
+            blocks.append((path,t))
+          if len(set(t for _,t in blocks))!=27: issues.append(['GLOBAL','V2 blocks not 27 unique'])
+          Path('V2-REGIONAL-DIFFERENTIATION-QA.md').write_text('# V2 지역별 차별화 QA\n\n- 대상: 27개 활성 지역\n- 수정: %d개\n- 고유 V2 블록: %d/27\n- 오류: %d\n- 보호: URL/canonical/H1/대표이미지/기존 FAQ/지역 생활권\n- 금지: 허위 지역 CASE, 고정 가격, 출동시간, A/S, 후기 생성\n\n%s\n' % (len(changed),len(set(t for _,t in blocks)),len(issues),'PASS' if not issues else json.dumps(issues,ensure_ascii=False,indent=2)),encoding='utf-8')
+          Path('DEPLOY-VERSION.txt').write_text('THEJEONGMIL-V2.5-REGIONAL-DIFFERENTIATION\n',encoding='utf-8')
+          print(json.dumps({'changed':len(changed),'unique_v2':len(set(t for _,t in blocks)),'issues':issues},ensure_ascii=False))
+          if issues: raise SystemExit(1)
+          PY
+      - name: Commit differentiated pages
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add region/gwangju region/jeonnam region/jeonbuk V2-REGIONAL-DIFFERENTIATION-QA.md DEPLOY-VERSION.txt
+          git diff --cached --quiet || git commit -m 'Differentiate V2 intent across 27 active regions'
+          git push
