@@ -1,0 +1,65 @@
+name: TheJeongmil Active27 Search Intent V2
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/thejeongmil-search-intent-v2.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  improve:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Strengthen active 27 search intent safely
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, html, json
+
+          active = {
+            'region/gwangju/gwangsan/index.html':'광주 광산구','region/gwangju/bukgu/index.html':'광주 북구','region/gwangju/seogu/index.html':'광주 서구','region/gwangju/namgu/index.html':'광주 남구','region/gwangju/donggu/index.html':'광주 동구',
+            'region/jeonbuk/gochang/index.html':'고창','region/jeonbuk/jeongeup/index.html':'정읍','region/jeonbuk/namwon/index.html':'남원','region/jeonbuk/sunchang/index.html':'순창',
+            'region/jeonnam/mokpo/index.html':'목포','region/jeonnam/yeosu/index.html':'여수','region/jeonnam/suncheon/index.html':'순천','region/jeonnam/naju/index.html':'나주','region/jeonnam/gwangyang/index.html':'광양','region/jeonnam/damyang/index.html':'담양','region/jeonnam/hwasun/index.html':'화순','region/jeonnam/jangseong/index.html':'장성','region/jeonnam/yeonggwang/index.html':'영광','region/jeonnam/hampyeong/index.html':'함평','region/jeonnam/yeongam/index.html':'영암','region/jeonnam/muan/index.html':'무안','region/jeonnam/gurye/index.html':'구례','region/jeonnam/goheung/index.html':'고흥','region/jeonnam/boseong/index.html':'보성','region/jeonnam/gokseong/index.html':'곡성','region/jeonnam/jangheung/index.html':'장흥','region/jeonnam/gangjin/index.html':'강진'
+          }
+          legacy=['배관현장연구소','배관연구소','010-4833-3447','01048333447','supermandrain.co.kr','슈퍼맨하수구','슈퍼맨누수']
+          changed=[]; issues=[]
+          def visible(x):
+            x=re.sub(r'<script.*?</script>|<style.*?</style>',' ',x,flags=re.S|re.I)
+            x=re.sub(r'<[^>]+>',' ',x)
+            return re.sub(r'\s+',' ',html.unescape(x)).strip()
+          for path,region in active.items():
+            p=Path(path); s=p.read_text(encoding='utf-8'); before=s
+            if 'SEARCH-INTENT-V2' not in s:
+              block=f'''<!-- SEARCH-INTENT-V2 --><section class="v4-section v4-intent-v2" id="search-intent-v2"><div class="v4-shell"><span class="v4-kicker">SYMPTOM & DECISION GUIDE</span><h2>{region} 하수구막힘·누수탐지, 증상에 맞춰 확인하세요</h2><p>{region}에서 배관 문제가 생겼을 때는 단순히 ‘뚫는 업체’만 찾기보다 어디에서 어떤 증상이 함께 나타나는지 확인하면 필요한 작업 범위를 판단하기 쉽습니다.</p><div class="v4-symgrid"><div><b>{region} 싱크대막힘·배수구역류</b><span>물이 느리게 빠지거나 여러 배수구가 함께 차오르면 가지배관과 오수관 범위를 나눠 확인합니다.</span></div><div><b>{region} 변기막힘·오수관막힘·맨홀역류</b><span>변기와 맨홀까지 동시에 이상이 생기면 메인관로 문제 가능성을 확인하고 내시경·관로탐지 등 필요한 진단을 선택합니다.</span></div><div><b>{region} 천장누수·아파트누수·화장실누수</b><span>보이는 물자국만으로 원인을 단정하지 않고 냉수·온수·난방배관 등 의심 계통을 구분해 탐지 범위를 좁힙니다.</span></div><div><b>{region} 수도배관·온수배관·난방배관 누수</b><span>압력검사와 필요한 가스·청음·열화상 검사를 조합하고, 실제 보수한 경우 2차 압력검사로 결과를 확인합니다.</span></div></div><h3>업체 선택과 비용을 볼 때 확인할 점</h3><p>하수구막힘 비용과 누수탐지 비용은 막힘 위치, 배관 길이와 구조, 필요한 장비, 탐지·보수 범위에 따라 달라질 수 있습니다. 전화상담에서는 증상과 이전 작업 여부를 먼저 설명하고, 현장에서는 원인 확인 없이 불필요한 작업 범위를 넓히지 않는지 살펴보는 것이 좋습니다.</p><div class="v4-linkcards"><a href="/drain/"><b>하수구막힘 진단방법 보기</b><span>싱크대·변기·배수구·오수관·맨홀 증상별 확인</span></a><a href="/leak/"><b>누수탐지 진단방법 보기</b><span>천장·화장실·수도·온수·난방배관 확인</span></a><a href="tel:01057583820"><b>{region} 증상 전화상담</b><span>010-5758-3820</span></a></div></div></section>'''
+              # Insert before existing FAQ/local-guide when possible, preserving title/H1/canonical/hero.
+              marker='<section class="v4-section v4-content-links" id="faq-local">'
+              if marker in s: s=s.replace(marker,block+marker,1)
+              elif '</main>' in s: s=s.replace('</main>',block+'</main>',1)
+              else: s=s.replace('</body>',block+'</body>',1)
+            if s!=before:
+              p.write_text(s,encoding='utf-8'); changed.append(path)
+            text=visible(s)
+            checks={
+              'brand':'더정밀누수하수구' in text,'phone':'010-5758-3820' in text,'legacy_clear':not any(x in s or x in text for x in legacy),
+              'intent_marker':'SEARCH-INTENT-V2' in s,'drain_intent':all(x in text for x in ['싱크대막힘','변기막힘','배수구역류','오수관막힘','맨홀역류']),
+              'leak_intent':all(x in text for x in ['천장누수','아파트누수','화장실누수','수도배관','온수배관','난방배관']),
+              'decision_intent':('업체 선택' in text and '비용' in text),'drain_link':'href="/drain/"' in s,'leak_link':'href="/leak/"' in s,
+              'canonical':bool(re.search(r'<link[^>]+rel=["\']canonical["\']',s,re.I)),'faq':'FAQPage' in s
+            }
+            if not all(checks.values()): issues.append({'page':path,'failed':[k for k,v in checks.items() if not v]})
+          report={'active_pages':27,'changed_pages':len(changed),'issues':issues,'pass_pages':27-len(issues)}
+          Path('SEARCH-INTENT-V2-QA.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+          Path('SEARCH-INTENT-V2-QA.md').write_text('# 더정밀누수하수구 검색의도 V2 QA\n\n- 운영 대상: 27개\n- 수정 페이지: %d개\n- PASS: %d개\n- 이슈: %d개\n\n## 보강 범위\n- 지역 + 싱크대막힘·변기막힘·배수구역류·오수관막힘·맨홀역류\n- 지역 + 천장누수·아파트누수·화장실누수·수도·온수·난방배관 누수\n- 업체 선택·비용 결정요인\n- 하수구/누수 서비스 내부링크\n- 기존 URL·canonical·H1·대표이미지 보존\n- 허위 가격·출동시간·A/S·후기·지역사례 추가 금지\n\n## 결과\n%s\n' % (len(changed),27-len(issues),len(issues),'PASS - 0 issues' if not issues else json.dumps(issues,ensure_ascii=False)),encoding='utf-8')
+          Path('DEPLOY-VERSION.txt').write_text('THEJEONGMIL-V2.4-SEARCH-INTENT\n',encoding='utf-8')
+          print(json.dumps(report,ensure_ascii=False))
+          if issues: raise SystemExit(1)
+          PY
+      - name: Commit search intent improvements
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add region/gwangju region/jeonnam region/jeonbuk SEARCH-INTENT-V2-QA.json SEARCH-INTENT-V2-QA.md DEPLOY-VERSION.txt
+          git diff --cached --quiet || git commit -m 'Strengthen search intent across 27 active regions'
+          git push
