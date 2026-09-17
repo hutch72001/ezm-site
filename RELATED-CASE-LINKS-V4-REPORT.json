@@ -1,0 +1,176 @@
+{
+  "version": "RELATED-CASE-LINKS-V4",
+  "base": "LINK-STRUCTURE-V3",
+  "active_region_pages": 27,
+  "related_case_links": 81,
+  "links_per_region": 3,
+  "excluded_noncore_pages": [
+    "region/jeonbuk/buan/index.html",
+    "region/jeonbuk/gimje/index.html",
+    "region/jeonbuk/gunsan/index.html",
+    "region/jeonbuk/iksan/index.html",
+    "region/jeonbuk/imsil/index.html",
+    "region/jeonbuk/jangsu/index.html",
+    "region/jeonbuk/jeonju/index.html",
+    "region/jeonbuk/jinan/index.html",
+    "region/jeonbuk/muju/index.html",
+    "region/jeonbuk/wanju/index.html",
+    "region/jeonnam/haenam/index.html",
+    "region/jeonnam/jindo/index.html",
+    "region/jeonnam/sinan/index.html",
+    "region/jeonnam/wando/index.html"
+  ],
+  "policy": [
+    "same-region real case first when available",
+    "other-region cases explicitly labeled as reference cases",
+    "no false local case claims",
+    "existing URL/canonical/H1/body preserved"
+  ],
+  "case_link_usage": {
+    "gwangsan": 11,
+    "hampyeong": 11,
+    "yeonggwang": 9,
+    "jeongeup": 10,
+    "gochang": 12,
+    "suncheon": 8,
+    "gurye": 10,
+    "namwon": 10
+  },
+  "mapping": {
+    "region/gwangju/bukgu/index.html": [
+      "gwangsan",
+      "hampyeong",
+      "yeonggwang"
+    ],
+    "region/gwangju/seogu/index.html": [
+      "jeongeup",
+      "gochang",
+      "suncheon"
+    ],
+    "region/gwangju/donggu/index.html": [
+      "gurye",
+      "namwon",
+      "gwangsan"
+    ],
+    "region/gwangju/gwangsan/index.html": [
+      "gwangsan",
+      "hampyeong",
+      "yeonggwang"
+    ],
+    "region/gwangju/namgu/index.html": [
+      "gochang",
+      "suncheon",
+      "gurye"
+    ],
+    "region/jeonbuk/jeongeup/index.html": [
+      "jeongeup",
+      "suncheon",
+      "gochang"
+    ],
+    "region/jeonbuk/sunchang/index.html": [
+      "namwon",
+      "gurye",
+      "gwangsan"
+    ],
+    "region/jeonbuk/gochang/index.html": [
+      "gochang",
+      "hampyeong",
+      "yeonggwang"
+    ],
+    "region/jeonbuk/namwon/index.html": [
+      "namwon",
+      "gochang",
+      "jeongeup"
+    ],
+    "region/jeonnam/boseong/index.html": [
+      "gurye",
+      "gwangsan",
+      "namwon"
+    ],
+    "region/jeonnam/gokseong/index.html": [
+      "gochang",
+      "jeongeup",
+      "hampyeong"
+    ],
+    "region/jeonnam/hampyeong/index.html": [
+      "hampyeong",
+      "yeonggwang",
+      "suncheon"
+    ],
+    "region/jeonnam/goheung/index.html": [
+      "gwangsan",
+      "namwon",
+      "gochang"
+    ],
+    "region/jeonnam/jangheung/index.html": [
+      "jeongeup",
+      "hampyeong",
+      "yeonggwang"
+    ],
+    "region/jeonnam/damyang/index.html": [
+      "suncheon",
+      "gurye",
+      "gwangsan"
+    ],
+    "region/jeonnam/gwangyang/index.html": [
+      "namwon",
+      "gochang",
+      "jeongeup"
+    ],
+    "region/jeonnam/gurye/index.html": [
+      "gurye",
+      "hampyeong",
+      "yeonggwang"
+    ],
+    "region/jeonnam/gangjin/index.html": [
+      "gurye",
+      "gwangsan",
+      "namwon"
+    ],
+    "region/jeonnam/mokpo/index.html": [
+      "gochang",
+      "jeongeup",
+      "hampyeong"
+    ],
+    "region/jeonnam/yeonggwang/index.html": [
+      "yeonggwang",
+      "suncheon",
+      "gurye"
+    ],
+    "region/jeonnam/naju/index.html": [
+      "gwangsan",
+      "namwon",
+      "gochang"
+    ],
+    "region/jeonnam/yeosu/index.html": [
+      "jeongeup",
+      "hampyeong",
+      "yeonggwang"
+    ],
+    "region/jeonnam/suncheon/index.html": [
+      "suncheon",
+      "gurye",
+      "gwangsan"
+    ],
+    "region/jeonnam/yeongam/index.html": [
+      "namwon",
+      "gochang",
+      "jeongeup"
+    ],
+    "region/jeonnam/jangseong/index.html": [
+      "hampyeong",
+      "yeonggwang",
+      "suncheon"
+    ],
+    "region/jeonnam/muan/index.html": [
+      "gurye",
+      "gwangsan",
+      "namwon"
+    ],
+    "region/jeonnam/hwasun/index.html": [
+      "gochang",
+      "jeongeup",
+      "hampyeong"
+    ]
+  }
+}
