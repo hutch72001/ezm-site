@@ -1,0 +1,25 @@
+{
+  "version": "V6",
+  "target_existing_region_pages": 8,
+  "new_knowledge_pages": 4,
+  "html_files": 71,
+  "internal_links_checked": 1059,
+  "broken_internal_links": [],
+  "hwasun_modified": false,
+  "targets": {
+    "region/gwangju/bukgu/index.html": "광주 북구",
+    "region/gwangju/seogu/index.html": "광주 서구",
+    "region/gwangju/namgu/index.html": "광주 남구",
+    "region/gwangju/donggu/index.html": "광주 동구",
+    "region/gwangju/gwangsan/index.html": "광주 광산구",
+    "region/jeonnam/damyang/index.html": "담양",
+    "region/jeonnam/naju/index.html": "나주",
+    "region/jeonnam/jangseong/index.html": "장성"
+  },
+  "new_pages": [
+    "leak/symptoms/index.html",
+    "leak/pipes/index.html",
+    "leak/process/index.html",
+    "faq/leak/index.html"
+  ]
+}
