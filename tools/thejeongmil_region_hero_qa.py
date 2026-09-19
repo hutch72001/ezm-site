@@ -3,7 +3,6 @@ import re, json
 
 ROOT=Path(__file__).resolve().parents[1]
 MAP={
-'region/gwangju/gwangsan/index.html':'광산구이미지.png','region/gwangju/bukgu/index.html':'북구이미지.png','region/gwangju/seogu/index.html':'서구이미지.png','region/gwangju/namgu/index.html':'남구이미지.png','region/gwangju/donggu/index.html':'동구이미지.png',
 'region/jeonnam/mokpo/index.html':'목포이미지.png','region/jeonnam/yeosu/index.html':'여수지역 이미지.png','region/jeonnam/suncheon/index.html':'순천지역 이미지.png','region/jeonnam/naju/index.html':'나주지역 이미지.png','region/jeonnam/gwangyang/index.html':'광양지역 이미지 주황.png','region/jeonnam/damyang/index.html':'담양이미지.png','region/jeonnam/gokseong/index.html':'곡성이미지.png','region/jeonnam/gurye/index.html':'구례이미지.png','region/jeonnam/goheung/index.html':'고흥이미지.png','region/jeonnam/boseong/index.html':'보성이미지.png','region/jeonnam/hwasun/index.html':'화순이미지.png','region/jeonnam/jangheung/index.html':'장흥이미지.png','region/jeonnam/gangjin/index.html':'강진이미지.png','region/jeonnam/yeongam/index.html':'영암이미지.png','region/jeonnam/muan/index.html':'무안이미지.png','region/jeonnam/hampyeong/index.html':'함평이미지.png','region/jeonnam/yeonggwang/index.html':'영광이미지.png','region/jeonnam/jangseong/index.html':'장성이미지.png',
 'region/jeonbuk/gochang/index.html':'고창지역 이미지.png','region/jeonbuk/jeongeup/index.html':'정읍지역 이미지.png','region/jeonbuk/namwon/index.html':'남원이미지.png','region/jeonbuk/sunchang/index.html':'순창지역 이미지.png'}
 
@@ -24,12 +23,28 @@ for rel,img in MAP.items():
  elif '대표이미지' not in m.group(1): fail(issues,rel,'representative image alt not descriptive')
  if '<link rel="stylesheet" href="/assets/thejeongmil-region-hero.css">' not in s: fail(issues,rel,'regional hero CSS link missing')
  if not any(x['page']==rel for x in issues): passed.append(rel)
+GWANGJU_HUBS={
+'region/gwangju/gwangsan/index.html':'/region/gwangju/gwangsan/leak/',
+'region/gwangju/bukgu/index.html':'/region/gwangju/bukgu/leak/',
+'region/gwangju/seogu/index.html':'/region/gwangju/seogu/leak/',
+'region/gwangju/namgu/index.html':'/region/gwangju/namgu/leak/',
+'region/gwangju/donggu/index.html':'/region/gwangju/donggu/leak/'
+}
+for rel,leak_url in GWANGJU_HUBS.items():
+ p=ROOT/rel
+ if not p.exists(): fail(issues,rel,'HTML missing'); continue
+ s=p.read_text(encoding='utf-8')
+ before=len(issues)
+ if leak_url not in s: fail(issues,rel,'dedicated leak page link missing')
+ if '<link href="https://ezm.co.kr/' not in s or 'rel="canonical"' not in s: fail(issues,rel,'canonical missing')
+ if '<h1>' not in s: fail(issues,rel,'H1 missing')
+ if len(issues)==before: passed.append(rel)
 css=(ROOT/'assets/thejeongmil-region-hero.css').read_text(encoding='utf-8') if (ROOT/'assets/thejeongmil-region-hero.css').exists() else ''
 for required in ['object-fit:contain','aspect-ratio:1/1','@media (max-width:899px)','word-break:keep-all','white-space:nowrap']:
  if required not in css: fail(issues,'assets/thejeongmil-region-hero.css',f'CSS QA rule missing: {required}')
-report={'target_pages':len(MAP),'passed_pages':len(passed),'issue_count':len(issues),'issues':issues}
+report={'target_pages':len(MAP)+len(GWANGJU_HUBS),'passed_pages':len(passed),'issue_count':len(issues),'issues':issues}
 (ROOT/'REGION-HERO-QA.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
-md=['# 더정밀 지역 대표이미지 QA','',f'- 대상 페이지: {len(MAP)}',f'- PASS: {len(passed)}',f'- 이슈: {len(issues)}','']
+md=['# 더정밀 지역 대표이미지 QA','',f'- 대상 페이지: {len(MAP)+len(GWANGJU_HUBS)}',f'- PASS: {len(passed)}',f'- 이슈: {len(issues)}','']
 if issues:
  md+=['## 이슈']+[f"- `{x['page']}` — {x['issue']}" for x in issues]
 else: md+=['## 결과','- 지역별 대표이미지 경로, OG 이미지, alt, 셀카 Hero 제거, 모바일 contain 및 제목 줄바꿈 규칙 모두 PASS']
