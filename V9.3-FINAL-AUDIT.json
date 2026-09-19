@@ -1,0 +1,100 @@
+{
+  "html": 82,
+  "broken_links": 0,
+  "broken_images": 0,
+  "h1_bad": [
+    [
+      "naver0137c09b89c967e26a8068fc98478ecf.html",
+      0
+    ]
+  ],
+  "duplicate_titles": {},
+  "duplicate_desc": {},
+  "duplicate_canonical": {},
+  "noindex": [],
+  "case_hub_cards": 13,
+  "case_hub_grid": true,
+  "region_case_sections": {
+    "region/gwangju/bukgu/leak/index.html": {
+      "cards": 2,
+      "labels": [
+        "해당 지역 실제 사례",
+        "타지역 유사 증상 참고 사례"
+      ],
+      "case_links": [
+        "/case/gwangju-bukgu-heating-pipe-leak/",
+        "/case/gurye-heating-pipe-leak/"
+      ]
+    },
+    "region/gwangju/seogu/leak/index.html": {
+      "cards": 1,
+      "labels": [
+        "타지역 유사 증상 참고 사례"
+      ],
+      "case_links": [
+        "/case/yeonggwang-apartment-leak/"
+      ]
+    },
+    "region/gwangju/namgu/leak/index.html": {
+      "cards": 1,
+      "labels": [
+        "타지역 유사 증상 참고 사례"
+      ],
+      "case_links": [
+        "/case/sunchang-cold-water-pipe-leak/"
+      ]
+    },
+    "region/gwangju/donggu/leak/index.html": {
+      "cards": 1,
+      "labels": [
+        "타지역 유사 증상 참고 사례"
+      ],
+      "case_links": [
+        "/case/suncheon-bathroom-ceiling-leak/"
+      ]
+    },
+    "region/gwangju/gwangsan/leak/index.html": {
+      "cards": 2,
+      "labels": [
+        "해당 지역 실제 사례",
+        "타지역 유사 증상 참고 사례"
+      ],
+      "case_links": [
+        "/case/gwangsan-sinchang-leak/",
+        "/case/jeongeup-apartment-leak/"
+      ]
+    },
+    "damyang-leak/index.html": {
+      "cards": 2,
+      "labels": [
+        "해당 지역 실제 사례",
+        "타지역 유사 증상 참고 사례"
+      ],
+      "case_links": [
+        "/case/damyang-apartment-hotwater-leak/",
+        "/case/yeonggwang-apartment-leak/"
+      ]
+    },
+    "naju-leak/index.html": {
+      "cards": 1,
+      "labels": [
+        "타지역 유사 증상 참고 사례"
+      ],
+      "case_links": [
+        "/case/hwasun-commercial-water-pipe-leak/"
+      ]
+    },
+    "jangseong-leak/index.html": {
+      "cards": 2,
+      "labels": [
+        "해당 지역 실제 사례",
+        "타지역 유사 증상 참고 사례"
+      ],
+      "case_links": [
+        "/case/jangseong-apartment-hotwater-leak/",
+        "/case/hampyeong-hotwater-pipe-leak/"
+      ]
+    }
+  },
+  "hwasun_sha256": "7ad672ed4622f0e4c6f5f0a29a9bec259bcef0e7a1085db316cf2386c66db482"
+}
