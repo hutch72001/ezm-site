@@ -9,3 +9,8 @@
 
 /* LINK-V3 */
 .link-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px}.link-card{display:flex;flex-direction:column;gap:6px;padding:18px;border:1px solid #dbe3ec;border-radius:14px;background:#fff;text-decoration:none;color:inherit}.link-card strong{font-size:17px}.link-card span{font-size:14px;line-height:1.55;color:#526173}.link-card:hover{border-color:#8ca3ba}.link-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.link-actions a{display:inline-block;padding:10px 14px;border:1px solid #cbd6e2;border-radius:999px;background:#fff;text-decoration:none;font-weight:800}.link-card.featured{border-width:2px}@media(max-width:760px){.link-grid{grid-template-columns:1fr}.link-actions a{width:100%;text-align:center}}
+
+/* V10.3 mobile evidence + symptom representative */
+.v4-symptom-representative{margin:24px 0 26px;border:1px solid #dce4ee;border-radius:24px;overflow:hidden;background:#fff;box-shadow:0 10px 30px #10213d0a}
+.v4-symptom-representative img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:contain;background:#fff}
+@media(max-width:800px){.v4-servicegrid{grid-template-columns:1fr!important}.v4-servicegrid article{display:block!important;width:100%!important;min-width:0!important}.v4-servicegrid img{display:block!important;width:100%!important;max-width:100%!important;height:auto!important;aspect-ratio:auto!important;object-fit:contain!important}.v4-symptom-representative{margin:20px 0 22px}.v4-symptom-representative img{width:100%!important;height:auto!important;aspect-ratio:1/1;object-fit:contain!important}}
